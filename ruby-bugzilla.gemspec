@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Akira TAGOH"]
   s.email       = ["akira@tagoh.org"]
-  s.homepage    = "http://github.com/tagoh/ruby-bugzilla"
+  s.homepage    = "http://rubygems.org/ruby-bugzilla"
   s.summary = %Q{Ruby binding for Bugzilla WebService APIs}
   s.description = %Q{This aims to provide similar features to access to Bugzilla through WebService APIs in Ruby.}
   s.required_rubygems_version = ">= 1.3.6"
