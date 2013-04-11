@@ -215,7 +215,7 @@ module BzConsole
         proxy_host, proxy_port = get_proxy(info)
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         begin
           result = user.login({'login'=>login, 'password'=>pass, 'remember'=>true})
@@ -321,7 +321,7 @@ module BzConsole
 
         @plugin.run(:pre, host, :getbug, opts)
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
@@ -435,7 +435,7 @@ module BzConsole
 
         @plugin.run(:pre, host, :search, opts[:command][:query])
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
@@ -514,7 +514,7 @@ module BzConsole
 
         @plugin.run(:pre, host, :show, opts)
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           if opts[:command][:show][:mode] == :field then
@@ -678,7 +678,7 @@ module BzConsole
         proxy_host, proxy_port = get_proxy(info)
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
@@ -862,7 +862,7 @@ module BzConsole
 
       @plugin.run(:pre, host, :newbug, opts)
 
-      xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout)
+      xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
       user = Bugzilla::User.new(xmlrpc)
       user.session(login, pass) do
         bug = Bugzilla::Bug.new(xmlrpc)
