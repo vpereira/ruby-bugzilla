@@ -1,5 +1,5 @@
 # version.rb
-# Copyright (C) 2010-2012 Red Hat, Inc.
+# Copyright (C) 2010-2014 Red Hat, Inc.
 #
 # Authors:
 #   Akira TAGOH  <tagoh@redhat.com>
@@ -26,6 +26,6 @@
 
 module Bugzilla
 
-  VERSION = "0.5.2"
+  VERSION = "0.5.3"
 
 end # module Bugzilla
