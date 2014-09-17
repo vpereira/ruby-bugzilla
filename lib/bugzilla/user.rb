@@ -43,28 +43,48 @@ Keeps the bugzilla session during doing something in the block.
 =end
 
     def session(user, password)
-      fname = File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')
+      r = check_version('4.4.3')
+      key = :cookie
+      if r[0] then
+        # Usisng tokens
+        key = :token
+        fname = File.join(ENV['HOME'], '.ruby-bugzilla-token.yml')
+      else
+        fname = File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')
+      end
+      host = @iface.instance_variable_get(:@xmlrpc).instance_variable_get(:@host)
+      val = nil
+
       if File.exist?(fname) && File.lstat(fname).mode & 0600 == 0600 then
         conf = YAML.load(File.open(fname).read)
-        host = @iface.instance_variable_get(:@xmlrpc).instance_variable_get(:@host)
-        cookie = conf[host]
-        unless cookie.nil? then
-          @iface.cookie = cookie
-          print "Using cookie\n"
-          yield
-          conf[host] = @iface.cookie
-          File.open(fname, 'w') {|f| f.chmod(0600); f.write(conf.to_yaml)}
-          return
-        end
+        val = conf[host]
+      else
+        conf = {}
       end
-      if user.nil? || password.nil? then
+      if !val.nil? then
+        if key == :token then
+          print "Using token\n"
+          @iface.token = val
+        else
+          print "Using cookie\n"
+          @iface.cookie = cookie
+        end
         yield
+      elsif user.nil? || password.nil? then
+        yield
+        return
       else
         login({'login'=>user, 'password'=>password, 'remember'=>true})
         yield
-        logout
       end
-      
+      if key == :token then
+        conf[host] = @iface.token
+      else
+        conf[host] = @iface.cookie
+      end
+      File.open(fname, 'w') {|f| f.chmod(0600); f.write(conf.to_yaml)}
+
+      return key
     end # def session
 
 =begin rdoc
@@ -92,7 +112,12 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
     def _login(cmd, *args)
       raise ArgumentError, "Invalid parameters" unless args[0].kind_of?(Hash)
 
-      @iface.call(cmd,args[0])
+      res = @iface.call(cmd,args[0])
+      unless res['token'].nil? then
+        @iface.token = res['token']
+      end
+
+      return res
     end # def _login
 
     def _logout(cmd, *args)
