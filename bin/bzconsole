@@ -135,7 +135,8 @@ module BzConsole
             'RHEL3'=>'Red Hat Enterprise Linux 3',
             'RHEL4'=>'Red Hat Enterprise Linux 4',
             'RHEL5'=>'Red Hat Enterprise Linux 5',
-            'RHEL6'=>'Red Hat Enterprise Linux 6'
+            'RHEL6'=>'Red Hat Enterprise Linux 6',
+            'Security'=>'Security Response'          
           },
           :Plugin=>"ruby-bugzilla/rhbugzilla.rb"
         },
@@ -156,6 +157,16 @@ module BzConsole
           :URL=>"https://bugzilla.mozilla.org",
           :User=>"account@example.com",
           :Password=>"blahblahblah",
+        },
+        "nvbz"=>{
+          :Name=>"Novell Bugzilla",
+          :URL=>"https://bugzilla.novell.com",
+          :User=>"account@example.com",
+          :Password=>"blahblahblah",
+          :ProductAliases=>{
+              'Security'=>'SUSE Security Incidents'
+          },
+          :Plugin=>"ruby-bugzilla/nvbugzilla.rb"
         }
       }
 

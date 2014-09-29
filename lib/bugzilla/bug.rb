@@ -289,10 +289,10 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Bug.html
       if args[0].kind_of?(Hash) then
         params = args[0]
       elsif args[0].kind_of?(Array) then
-	params['ids'] = args[0]
+	    params['ids'] = args[0]
       elsif args[0].kind_of?(Integer) ||
-          args[0].kind_of?(String) then
-	params['ids'] = [args[0]]
+        args[0].kind_of?(String) then
+	    params['ids'] = [args[0]]
       else
         raise ArgumentError, "Invalid parameters"
       end
@@ -316,7 +316,7 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Bug.html
 
       res = check_version("3.0.4")
       unless res[0] then
-	required_fields.push(*defaulted_fields)
+	    required_fields.push(*defaulted_fields)
       end
       required_fields.each do |f|
         raise ArgumentError, sprintf("Required fields isn't given: %s", f) unless args[0].include?(f)
