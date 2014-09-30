@@ -1,8 +1,8 @@
-# version.rb
-# Copyright (C) 2010-2014 Red Hat, Inc.
+# nvbugzilla.rb
+# Copyright (C) 2014 Novell, Inc.
 #
 # Authors:
-#   Akira TAGOH  <tagoh@redhat.com>
+#  Victor Pereira  <vpereira@suse.com>
 #
 # This library is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,15 +17,39 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+require 'rubygems'
 
-=begin rdoc
-
-== Bugzilla
-
-=end
+#begin
+#  gem 'ruby-bugzilla'
+#rescue Gem::LoadError
+#  require File.join(File.dirname(__FILE__), "..", "bugzilla.rb")
+#end
 
 module Bugzilla
 
-  VERSION = "0.5.4"
+  module Plugin
+
+    class Novell < ::Bugzilla::Plugin::Template
+
+      def initialize
+        super
+	    @hostname = "bugzilla.novell.com"
+      end # def initialize
+
+      def parserhook(*args)
+        super
+      end # def parserhook
+
+      def prehook(*args)
+        super
+      end # def prehook
+
+      def posthook(*args)
+        super
+      end # def posthook
+
+    end # class Novell
+
+  end # module Plugin
 
 end # module Bugzilla

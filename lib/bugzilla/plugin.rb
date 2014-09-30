@@ -38,20 +38,20 @@ module Bugzilla
       @@plugins = []
 
       def initialize
-	@hostname = nil
+	    @hostname = nil
       end # def initialize
 
       attr_reader :hostname
 
       def Template.inherited(subclass)
-	@@plugins << subclass
+	    @@plugins << subclass
       end # def inherited
 
       def run(hook, host, *args)
         @@plugins.each do |k|
-          i = k.new
-          if i.hostname == host || host.nil? then
-            case hook
+        i = k.new
+        if i.hostname == host || host.nil? then
+          case hook
             when :parser
               i.parserhook(*args)
             when :pre
