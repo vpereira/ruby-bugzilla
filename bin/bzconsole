@@ -42,20 +42,20 @@ rescue LoadError
 end
 
 module BzConsole
-    module Utils
-        def get_xmlrpc(conf = {},opts = {})
-            info = conf
-            uri = URI.parse(info[:URL])
-            host = uri.host
-            port = uri.port
-            path = uri.path.empty? ? nil : uri.path
-                      proxy_host, proxy_port = get_proxy(info)
-            timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
-            yield host if block_given? # if you want to run some pre hook
-            xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
-            [xmlrpc,host]
-        end
+  module Utils
+    def get_xmlrpc(conf = {},opts = {})
+      info = conf
+      uri = URI.parse(info[:URL])
+      host = uri.host
+      port = uri.port
+      path = uri.path.empty? ? nil : uri.path
+      proxy_host, proxy_port = get_proxy(info)
+      timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
+      yield host if block_given? # if you want to run some pre hook
+      xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+      [xmlrpc,host]
     end
+  end
 end
 
 module BzConsole
@@ -131,7 +131,6 @@ module BzConsole
 
     def initialize(plugin)
       super
-
       @n_args = 0
     end # def initialize
 
@@ -209,7 +208,6 @@ module BzConsole
 
     def initialize(plugin)
       super
-
       @n_args = 1
     end # def initialize
 
@@ -642,7 +640,7 @@ module BzConsole
       timeline = data[:label]
       data.delete(:label)
       def timeline.to_hash
-	ret = {}
+        ret = {}
         (0..self.length-1).each do |i|
           ret[i] = self[i] unless self[i].nil?
         end
