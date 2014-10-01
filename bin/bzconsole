@@ -712,7 +712,7 @@ module BzConsole
           @plugin.run(:pre, host, :metrics, searchopts, opts[:metrics])
 
           if searchopts == opts[:command][:query] then
-            raise NoMethodError, "No method to deal with the query"
+            raise ArgumentError, "No method to deal with the query. specify search options."
           end
 
           while ts < te do
