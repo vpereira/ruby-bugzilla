@@ -42,8 +42,27 @@ rescue LoadError
 end
 
 module BzConsole
+  module Utils
+    def get_xmlrpc(conf = {},opts = {})
+      info = conf
+      uri = URI.parse(info[:URL])
+      host = uri.host
+      port = uri.port
+      path = uri.path.empty? ? nil : uri.path
+      proxy_host, proxy_port = get_proxy(info)
+      timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
+      yield host if block_given? # if you want to run some pre hook
+      xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+      [xmlrpc,host]
+    end
+  end
+end
+
+module BzConsole
 
   class CommandTemplate
+
+    include Utils
 
     def initialize(plugin)
       @n_args = 0
@@ -112,7 +131,6 @@ module BzConsole
 
     def initialize(plugin)
       super
-
       @n_args = 0
     end # def initialize
 
@@ -190,7 +208,6 @@ module BzConsole
 
     def initialize(plugin)
       super
-
       @n_args = 1
     end # def initialize
 
@@ -217,17 +234,12 @@ module BzConsole
         end
 
         info = conf[prefix]
-        uri = URI.parse(info[:URL])
-        host = uri.host
-        port = uri.port
-        path = uri.path.empty? ? nil : uri.path
         login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
         pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
-        proxy_host, proxy_port = get_proxy(info)
-        timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+        xmlrpc,host = get_xmlrpc(conf[prefix],opts)
         user = Bugzilla::User.new(xmlrpc)
+
         begin
           result = user.login({'login'=>login, 'password'=>pass, 'remember'=>true})
           cconf[host] = xmlrpc.cookie
@@ -321,18 +333,13 @@ module BzConsole
         end
 
         info = conf[prefix]
-        uri = URI.parse(info[:URL])
-        host = uri.host
-        port = uri.port
-        path = uri.path.empty? ? nil : uri.path
-        login = opts[:command][:anonymous] == true ? nil : info[:User]
-        pass = opts[:command][:anonymous] == true ? nil : info[:Password]
-        proxy_host, proxy_port = get_proxy(info)
-        timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
+        login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+        pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
 
-        @plugin.run(:pre, host, :getbug, opts)
+        xmlrpc,host = get_xmlrpc(conf[prefix],opts) do |h|
+            @plugin.run(:pre, h, :getbug, opts)
+        end
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
@@ -449,19 +456,19 @@ module BzConsole
         xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
-          bug = Bugzilla::Bug.new(xmlrpc)
+            bug = Bugzilla::Bug.new(xmlrpc)
+            opts[:command][:query][:product].map! { |x| info.include?(:ProductAliases) && 
+                                                info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x } if opts[:command][:query].include?(:product)
 
-          opts[:command][:query][:product].map! {|x| info.include?(:ProductAliases) && info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x} if opts[:command][:query].include?(:product)
+            result = bug.search(opts[:command][:query])
 
-          result = bug.search(opts[:command][:query])
+            @plugin.run(:post, host, :search, result)
 
-          @plugin.run(:post, host, :search, result)
-
-          if result.include?('bugs') then
-            result['bugs'].each do |r|
-              yield r
+            if result.include?('bugs') then
+                result['bugs'].each do |r|
+                    yield r
+                end
             end
-          end
         end
       end
     end # def real_do
@@ -633,7 +640,7 @@ module BzConsole
       timeline = data[:label]
       data.delete(:label)
       def timeline.to_hash
-	ret = {}
+        ret = {}
         (0..self.length-1).each do |i|
           ret[i] = self[i] unless self[i].nil?
         end
@@ -679,16 +686,11 @@ module BzConsole
         end
 
         info = conf[prefix]
-        uri = URI.parse(info[:URL])
-        host = uri.host
-        port = uri.port
-        path = uri.path.empty? ? nil : uri.path
-        login = opts[:command][:anonymous] == true ? nil : info[:User]
-        pass = opts[:command][:anonymous] == true ? nil : info[:Password]
-        proxy_host, proxy_port = get_proxy(info)
-        timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
+        login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+        pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+
+        xmlrpc,host = get_xmlrpc(conf[prefix],opts)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
@@ -711,97 +713,95 @@ module BzConsole
 
           @plugin.run(:pre, host, :metrics, searchopts, opts[:metrics])
 
-          if searchopts == opts[:command][:query] then
-            raise ArgumentError, "No method to deal with the query. specify search options."
-          end
+          raise NoMethodError, "No method to deal with the query" if searchopts == opts[:command][:query]
 
           while ts < te do
-            searchopts = opts[:command][:query].clone
+              searchopts = opts[:command][:query].clone
 
-            # don't rely on the status to deal with NEW bugs.
-            # unable to estimate the case bugs closed quickly
-            if opts[:command][:metrics][:x_coordinate] == :weekly then
-              d = Date.new(ts.year, ts.month, ts.day)
-              de = Date.commercial(d.year, d.cweek, 7)
-              drange = [ts, Time.utc(de.year, de.month, de.day, 23, 59, 59)]
-            else
-              drange = [ts, Time.utc(ts.year, ts.month + 1, 1) - 1]
-            end
-            searchopts[:creation_time] = drange
+              # don't rely on the status to deal with NEW bugs.
+              # unable to estimate the case bugs closed quickly
+              if opts[:command][:metrics][:x_coordinate] == :weekly then
+                d = Date.new(ts.year, ts.month, ts.day)
+                de = Date.commercial(d.year, d.cweek, 7)
+                drange = [ts, Time.utc(de.year, de.month, de.day, 23, 59, 59)]
+              else
+                drange = [ts, Time.utc(ts.year, ts.month + 1, 1) - 1]
+              end
 
-            @plugin.run(:pre, host, :metrics, searchopts)
+              searchopts[:creation_time] = drange
 
-            result = bug.search(searchopts)
+              @plugin.run(:pre, host, :metrics, searchopts)
 
-            @plugin.run(:post, host, :search, result)
+              result = bug.search(searchopts)
 
-            new = result.include?('bugs') ? result['bugs'].length : 0
+              @plugin.run(:post, host, :search, result)
 
-            # for open bugs
-            # what we are interested in here would be how many bugs still keeps open.
-            searchopts = opts[:command][:query].clone
-            searchopts[:last_change_time] = drange
-            searchopts[:status] = '__open__'
+              new = result.include?('bugs') ? result['bugs'].length : 0
 
-            @plugin.run(:pre, host, :metrics, searchopts)
+              # for open bugs
+              # what we are interested in here would be how many bugs still keeps open.
+              searchopts = opts[:command][:query].clone
+              searchopts[:last_change_time] = drange
+              searchopts[:status] = '__open__'
 
-            result = bug.search(searchopts)
+              @plugin.run(:pre, host, :metrics, searchopts)
 
-            @plugin.run(:post, host, :search, result)
+              result = bug.search(searchopts)
 
-            assigned = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'ASSIGNED' ? x : nil}.compact.length : 0
-            modified = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'MODIFIED' ? x : nil}.compact.length : 0
-            on_qa = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'ON_QA' ? x : nil}.compact.length : 0
+              @plugin.run(:post, host, :search, result)
 
-            # send a separate query for closed.
-            # just counting CLOSED the above is meaningless.
-            # what we are interested in here would be how much bugs are
-            # actually closed, but not how many closed bugs one worked on.
-            searchopts = opts[:command][:query].clone
-            searchopts[:last_change_time] = drange
-            searchopts[:status] = 'CLOSED'
+              assigned = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'ASSIGNED' ? x : nil}.compact.length : 0
+              modified = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'MODIFIED' ? x : nil}.compact.length : 0
+              on_qa = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'ON_QA' ? x : nil}.compact.length : 0
 
-            @plugin.run(:pre, host, :metrics, searchopts)
+              # send a separate query for closed.
+              # just counting CLOSED the above is meaningless.
+              # what we are interested in here would be how much bugs are
+              # actually closed, but not how many closed bugs one worked on.
+              searchopts = opts[:command][:query].clone
+              searchopts[:last_change_time] = drange
+              searchopts[:status] = 'CLOSED'
 
-            result = bug.search(searchopts)
+              @plugin.run(:pre, host, :metrics, searchopts)
 
-            @plugin.run(:post, host, :search, result)
+              result = bug.search(searchopts)
 
-            closed = result.include?('bugs') ? result['bugs'].length : 0
+              @plugin.run(:post, host, :search, result)
 
-            # obtain the information for open bugs that closed now
-            searchopts = opts[:command][:query].clone
-            searchopts[:status] = 'CLOSED'
-            searchopts[:metrics_closed_after] = drange[1] + 1
+              closed = result.include?('bugs') ? result['bugs'].length : 0
 
-            @plugin.run(:pre, host, :metrics, searchopts)
+              # obtain the information for open bugs that closed now
+              searchopts = opts[:command][:query].clone
+              searchopts[:status] = 'CLOSED'
+              searchopts[:metrics_closed_after] = drange[1] + 1
 
-            result = bug.search(searchopts)
+              @plugin.run(:pre, host, :metrics, searchopts)
 
-            @plugin.run(:post, host, :search, result)
+              result = bug.search(searchopts)
 
-            open_bugs = result.include?('bugs') ? result['bugs'].length : 0
+              @plugin.run(:post, host, :search, result)
 
-            # obtain the information for open bugs
-            searchopts = opts[:command][:query].clone
-            searchopts[:metrics_not_closed] = drange[1]
+              open_bugs = result.include?('bugs') ? result['bugs'].length : 0
 
-            @plugin.run(:pre, host, :metrics, searchopts)
+              # obtain the information for open bugs
+              searchopts = opts[:command][:query].clone
+              searchopts[:metrics_not_closed] = drange[1]
 
-            result = bug.search(searchopts)
+              @plugin.run(:pre, host, :metrics, searchopts)
 
-            @plugin.run(:post, host, :search, result)
+              result = bug.search(searchopts)
 
-            open_bugs += result.include?('bugs') ? result['bugs'].length : 0
+              @plugin.run(:post, host, :search, result)
 
-            yield ts, new, assigned, modified, on_qa, closed, open_bugs
+              open_bugs += result.include?('bugs') ? result['bugs'].length : 0
 
-            ts = drange[1] + 1
-          end
+              yield ts, new, assigned, modified, on_qa, closed, open_bugs
+
+              ts = drange[1] + 1
+          end #while
         end
       end
     end # def real_do
-
   end # class Metrics
 
   class Newbug < CommandTemplate
