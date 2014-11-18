@@ -89,6 +89,35 @@ Keeps the bugzilla session during doing something in the block.
 
 =begin rdoc
 
+==== Bugzilla::User#get_userinfo(params)
+
+=end
+
+    def get_userinfo(user)
+      p = {}
+      ids = []
+      names = []
+
+      if user.kind_of?(Array) then
+        user.each do |u|
+          names << u if u.kind_of?(String)
+          id << u if u.kind_of?(Integer)
+        end
+      elsif user.kind_of?(String) then
+	names << user
+      elsif user.kind_of?(Integer) then
+	ids << user
+      else
+        raise ArgumentError, sprintf("Unknown type of arguments: %s", user.class)
+      end
+
+      result = get({'ids'=>ids, 'names'=>names})
+
+      result['users']
+    end # def get_userinfo
+
+=begin rdoc
+
 ==== Bugzilla::User#login(params)
 
 Raw Bugzilla API to log into Bugzilla.
@@ -136,8 +165,11 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
       # FIXME
     end # def _update
 
-    def __get(cmd, *args)
+    def _get(cmd, *args)
+      raise ArgumentError, "Invalid parameters" unless args[0].kind_of?(Hash)
+
       requires_version(cmd, 3.4)
+      res = @iface.call(cmd, args[0])
       # FIXME
     end # def _get
 
