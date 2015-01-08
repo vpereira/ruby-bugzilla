@@ -12,21 +12,22 @@ Gem::Specification.new do |s|
   s.homepage    = "http://rubygems.org/gems/ruby-bugzilla"
   s.summary = %Q{Ruby binding for Bugzilla WebService APIs}
   s.description = %Q{This aims to provide similar features to access to Bugzilla through WebService APIs in Ruby.}
+  s.license     = 'LGPL-3.0+'
   s.required_rubygems_version = ">= 1.3.6"
 
   s.add_development_dependency "rspec", "~> 2.0"
-  s.add_runtime_dependency "gruff"
-  s.add_runtime_dependency "highline"
+  s.add_runtime_dependency "gruff", "~> 0"
+  s.add_runtime_dependency "highline", "~> 0"
 
   # sems like gruff is missing this one
-  s.add_runtime_dependency "rmagick"
+  s.add_runtime_dependency "rmagick", "~> 0"
 
-  s.add_development_dependency("bundler", [">= 1.0"])
+  s.add_development_dependency("bundler", ["~> 1.0"])
 
   bindir = 'bin'
   s.executables = Dir.glob('bin/*').reject {|x| x =~ /~\Z/}.map {|x| File.basename x}
   s.default_executable = 'bzconsole'
 
-  s.files        = Dir.glob("lib/**/*") + %w(README.md COPYING)
+  s.files        = Dir.glob("lib/**/*[^~]") + %w(README.md COPYING)
   s.require_path = 'lib'
 end
