@@ -27,6 +27,6 @@ Gem::Specification.new do |s|
   s.executables = Dir.glob('bin/*').reject {|x| x =~ /~\Z/}.map {|x| File.basename x}
   s.default_executable = 'bzconsole'
 
-  s.files        = Dir.glob("lib/**/*") + %w(README.rdoc COPYING)
+  s.files        = Dir.glob("lib/**/*") + %w(README.md COPYING)
   s.require_path = 'lib'
 end
