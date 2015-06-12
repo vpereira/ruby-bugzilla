@@ -17,10 +17,10 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "rspec", "~> 2.0"
   s.add_runtime_dependency "gruff", "~> 0"
-  s.add_runtime_dependency "highline", "~> 0"
+  s.add_runtime_dependency "highline"
 
-  # sems like gruff is missing this one
-  s.add_runtime_dependency "rmagick", "~> 0"
+  # seems like gruff is missing this one
+  #s.add_runtime_dependency "rmagick", "~> 0"
 
   s.add_development_dependency("bundler", ["~> 1.0"])
 
