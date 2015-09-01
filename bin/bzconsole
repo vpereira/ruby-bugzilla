@@ -333,8 +333,13 @@ module BzConsole
         end
 
         info = conf[prefix]
-        login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-        pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        if opts[:command][:anonymous] == true then
+          login = nil
+          pass = nil
+        else
+          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        end
 
         xmlrpc,host = get_xmlrpc(conf[prefix],opts) do |h|
             @plugin.run(:pre, h, :getbug, opts)
@@ -446,8 +451,13 @@ module BzConsole
         host = uri.host
         port = uri.port
         path = uri.path.empty? ? nil : uri.path
-        login = opts[:command][:anonymous] == true ? nil : info[:User]
-        pass = opts[:command][:anonymous] == true ? nil : info[:Password]
+        if opts[:command][:anonymous] == true then
+          login = nil
+          pass = nil
+        else
+          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        end
         proxy_host, proxy_port = get_proxy(info)
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
@@ -525,8 +535,13 @@ module BzConsole
         host = uri.host
         port = uri.port
         path = uri.path.empty? ? nil : uri.path
-        login = opts[:command][:anonymous] == true ? nil : info[:User]
-        pass = opts[:command][:anonymous] == true ? nil : info[:Password]
+        if opts[:command][:anonymous] == true then
+          login = nil
+          pass = nil
+        else
+          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        end
         proxy_host, proxy_port = get_proxy(info)
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
@@ -686,8 +701,13 @@ module BzConsole
         end
 
         info = conf[prefix]
-        login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-        pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        if opts[:command][:anonymous] == true then
+          login = nil
+          pass = nil
+        else
+          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        end
 
 
         xmlrpc,host = get_xmlrpc(conf[prefix],opts)
@@ -865,8 +885,8 @@ module BzConsole
       host = uri.host
       port = uri.port
       path = uri.path.empty? ? nil : uri.path
-      login = opts[:command][:anonymous] == true ? nil : info[:User]
-      pass = opts[:command][:anonymous] == true ? nil : info[:Password]
+      login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+      pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
       proxy_host, proxy_port = get_proxy(info)
       timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
@@ -979,8 +999,13 @@ module BzConsole
         end
 
         info = conf[prefix]
-        login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-        pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        if opts[:command][:anonymous] == true then
+          login = nil
+          pass = nil
+        else
+          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
+          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        end
 
         xmlrpc, host = get_xmlrpc(conf[prefix], opts)
         user = Bugzilla::User.new(xmlrpc)
