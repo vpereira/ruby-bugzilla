@@ -1,17 +1,17 @@
-= Ruby binding for Bugzilla WebService APIs
+# Ruby binding for Bugzilla WebService APIs #
 
 This aims to provide similar features in Ruby to access to Bugzilla
-through {WebService APIs}[http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService.html].  currently the following
+through [WebService APIs](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/webService.html). currently the following
 APIs are available:
 
-* Bugzilla::WebService::Bug[http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Bug.html]
-* Bugzilla::WebService::Bugzilla[http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Bugzilla.html]
-* Bugzilla::WebService::Classification[http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Classification.html]
-* Bugzilla::WebService::Product[http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Product.html]
-* Bugzilla::WebService::User[http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html]
+* [Bugzilla::WebService::Bug](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Bug.html)
+* [Bugzilla::WebService::Bugzilla](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Bugzilla.html)
+* [Bugzilla::WebService::Classification](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Classification.html)
+* [Bugzilla::WebService::Product](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Product.html)
+* [Bugzilla::WebService::User](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html)
 
 
-== bzconsole usage
+## bzconsole usage ##
 
 as example, in the bin directory, we have a tool named bzconsole. with that, you can login, search and get a bug. some examples:
 
@@ -38,17 +38,18 @@ get a specific bug:
 ````
 bzconsole getbug nvbz:889526
 ````
-== Copyright
+
+## Copyright ##
 
 Copyright (c) 2010-2014 Red Hat, Inc. See COPYING for details.
 
-== License
+## License ##
 
 This library is free software: you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation, either
 version 3 of the License, or (at your option) any later version.
 
-== Authors
+## Authors ##
 
 Akira TAGOH
