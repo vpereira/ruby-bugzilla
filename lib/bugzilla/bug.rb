@@ -119,7 +119,19 @@ actually deprecated.
       result = comments(params)
 
       # not supporting comment_ids. so drop "comments".
-      result['bugs']
+      ret = result['bugs']
+      # creation_time was added in Bugzilla 4.4. copy the 'time' value to creation_time if not available for compatibility.
+      unless check_version(4.4)[0] then
+        ret.each do |id, o|
+          o['comments'].each do |c|
+            unless c.include?('creation_time') then
+              c['creation_time'] = c['time']
+            end
+          end
+        end
+      end
+
+      ret
     end # def get_comments
 
 =begin rdoc
