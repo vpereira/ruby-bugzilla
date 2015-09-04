@@ -67,7 +67,7 @@ Keeps the bugzilla session during doing something in the block.
           @iface.token = val
         else
           print "Using cookie\n"
-          @iface.cookie = cookie
+          @iface.cookie = val
         end
         yield
       elsif user.nil? || password.nil? then
