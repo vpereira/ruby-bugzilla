@@ -46,7 +46,7 @@ Bugzilla version that is running on.
       v = version
       f = false
       if v.kind_of?(Hash) && v.include?("version") &&
-          v['version'] >= "#{version_}" then
+          Gem::Version.new(v['version']) >= Gem::Version.new("#{version_}") then
 	f = true
       end
 
