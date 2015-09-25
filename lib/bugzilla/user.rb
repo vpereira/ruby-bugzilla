@@ -44,12 +44,12 @@ Keeps the bugzilla session during doing something in the block.
 
     def session(user, password)
       r = check_version('4.4.3')
-      key = :cookie
+
       if r[0] then
-        # Usisng tokens
         key = :token
         fname = File.join(ENV['HOME'], '.ruby-bugzilla-token.yml')
       else
+        key = :cookie
         fname = File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')
       end
       host = @iface.instance_variable_get(:@xmlrpc).instance_variable_get(:@host)
@@ -63,10 +63,8 @@ Keeps the bugzilla session during doing something in the block.
       end
       if !val.nil? then
         if key == :token then
-          print "Using token\n"
           @iface.token = val
         else
-          print "Using cookie\n"
           @iface.cookie = val
         end
         yield
