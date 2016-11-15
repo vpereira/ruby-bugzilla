@@ -393,7 +393,7 @@ module BzConsole
       parser.on('--platform=PLATFORMS', 'filter out the result by the platform') {|v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(','))}
       parser.on('--priority=PRIORITY', 'filter out the result by the priority') {|v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(','))}
       parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') {|v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(','))}
-      parser.on('--resolution=RESOLUSIONS', 'filter out the result by the resolusions') {|v| opts[:query][:resolution] ||= []; opts[:query][:resolusion].push(*v.split(','))}
+      parser.on('--resolution=RESOLUTIONS', 'filter out the result by the resolutions') {|v| opts[:query][:resolution] ||= []; opts[:query][:resolution].push(*v.split(','))}
       parser.on('--severity=SEVERITY', 'filter out the result by the severity') {|v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(','))}
       parser.on('-s', '--status=STATUSES', 'filter out the result by the status') {|v| opts[:query][:status] ||= []; opts[:query][:status].push(*v.split(','))}
       parser.on('--summary=SUMMARY', 'filter out the result by the summary') {|v| opts[:query][:summary] ||= []; opts[:query][:summary] << v}
