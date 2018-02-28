@@ -40,7 +40,7 @@ module Bugzilla
 
     def session(user, password)
       r = check_version('4.4.3')
-
+      # if version supported, use token, otherwise cookie
       if r[0]
         key = :token
         fname = File.join(ENV['HOME'], '.ruby-bugzilla-token.yml')
@@ -48,6 +48,8 @@ module Bugzilla
         key = :cookie
         fname = File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')
       end
+      # TODO
+      # make those variables available
       host = @iface.instance_variable_get(:@xmlrpc).instance_variable_get(:@host)
       val = nil
 
@@ -128,6 +130,20 @@ module Bugzilla
     #
 
     protected
+
+    def is_token_supported?
+      check_version('4.4.3')[0] == true ? true : false rescue false
+    end
+
+    # it returns an array with authentication type and the name of the storage
+    def authentication_method
+      # if version supported, use token, otherwise cookie
+      if is_token_supported?
+        [:token, File.join(ENV['HOME'], '.ruby-bugzilla-token.yml') ]
+      else
+        [:cookie, File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')]
+      end
+    end
 
     def _login(cmd, *args)
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
