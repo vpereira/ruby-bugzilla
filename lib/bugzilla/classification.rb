@@ -46,7 +46,7 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Classificat
 
     protected
 
-    def _get(cmd, args[0])
+    def _get(cmd, args)
       requires_version(cmd, 4.4)
 
       params = {}
@@ -71,7 +71,5 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Classificat
 
       @iface.call(cmd, params)
     end # def _get
-
   end # class Classification
-
 end # module Bugzilla
