@@ -1,5 +1,8 @@
 # Ruby binding for Bugzilla WebService APIs #
 
+[![Build
+Status](https://travis-ci.org/vpereira/ruby-bugzilla.svg?branch=master)](https://travis-ci.org/vpereira/ruby-bugzilla)
+
 This aims to provide similar features in Ruby to access to Bugzilla
 through [WebService APIs](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/webService.html). currently the following
 APIs are available:
