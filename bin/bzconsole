@@ -5,7 +5,8 @@
 # Authors:
 #   Akira TAGOH  <tagoh@redhat.com>
 #
-# This library is free software: you can redistribute it and/or
+# This library is free software: you can redist
+end            te it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation, either
 # version 3 of the License, or (at your option) any later version.
@@ -70,7 +71,7 @@ module BzConsole
     attr_reader :n_args
 
     def parse(parser, argv, opts)
-      raise RuntimeError, format('No implementation for %s', self.class) if self.class =~ /CommandTemplate/
+      raise format('No implementation for %s', self.class) if self.class =~ /CommandTemplate/
 
       parser.on('-h', '--help', 'show this message') { |_x| opts[:help] = true }
 
@@ -81,7 +82,7 @@ module BzConsole
     end # def parse
 
     def do(_argv)
-      raise RuntimeError, format('No implementation for %s', self.class)
+      raise format('No implementation for %s', self.class)
     end # def do
 
     protected
@@ -89,17 +90,15 @@ module BzConsole
     def read_config(opts)
       fname = opts[:config].nil? ? @defaultyamlfile : opts[:config]
       begin
-        # TODO fix config file
+        # TODO: fix config file
         # Psych doesnt allow Symbol as class
         # conf = YAML.safe_load(File.open(fname).read)
-        conf = YAML.load(File.open(fname).read)
+        conf = YAML.safe_load(File.open(fname).read)
       rescue Errno::ENOENT
         conf = {}
       end
       conf.each do |_k, v|
-        if v.is_a?(Hash) && v.include?(:Plugin)
-          load(v[:Plugin])
-        end
+        load(v[:Plugin]) if v.is_a?(Hash) && v.include?(:Plugin)
       end
       conf
     end # def read_config
@@ -109,7 +108,7 @@ module BzConsole
       if File.exist?(fname)
         st = File.lstat(fname)
         if st.mode & 0o600 != 0o600
-          raise RuntimeError, format('The permissions of %s has to be 0600', fname)
+          raise format('The permissions of %s has to be 0600', fname)
         end
       end
       File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
@@ -143,46 +142,46 @@ module BzConsole
     def do(_argv, opts)
       template = {
         'rhbz' => {
-          :Name => 'Red Hat Bugzilla',
-          :URL => 'https://bugzilla.redhat.com',
-          :User => 'account@example.com',
-          :Password => 'blahblahblah',
-          :ProductAliases => {
+          Name: 'Red Hat Bugzilla',
+          URL: 'https://bugzilla.redhat.com',
+          User: 'account@example.com',
+          Password: 'blahblahblah',
+          ProductAliases: {
             'RHEL3' => 'Red Hat Enterprise Linux 3',
             'RHEL4' => 'Red Hat Enterprise Linux 4',
             'RHEL5' => 'Red Hat Enterprise Linux 5',
             'RHEL6' => 'Red Hat Enterprise Linux 6',
             'Security' => 'Security Response'
           },
-          :Plugin => 'ruby-bugzilla/rhbugzilla.rb'
+          Plugin: 'ruby-bugzilla/rhbugzilla.rb'
         },
         'gnbz' => {
-          :Name => 'GNOME Bugzilla',
-          :URL => 'https://bugzilla.gnome.org',
-          :User => 'account@example.com',
-          :Password => 'blahblahblah'
+          Name: 'GNOME Bugzilla',
+          URL: 'https://bugzilla.gnome.org',
+          User: 'account@example.com',
+          Password: 'blahblahblah'
         },
         'fdobz' => {
-          :Name => 'FreeDesktop Bugzilla',
-          :URL => 'https://bugs.freedesktop.org',
-          :User => 'account@example.com',
-          :Password => 'blahblahblah'
+          Name: 'FreeDesktop Bugzilla',
+          URL: 'https://bugs.freedesktop.org',
+          User: 'account@example.com',
+          Password: 'blahblahblah'
         },
         'mzbz' => {
-          :Name => 'Mozilla Bugzilla',
-          :URL => 'https://bugzilla.mozilla.org',
-          :User => 'account@example.com',
-          :Password => 'blahblahblah'
+          Name: 'Mozilla Bugzilla',
+          URL: 'https://bugzilla.mozilla.org',
+          User: 'account@example.com',
+          Password: 'blahblahblah'
         },
         'nvbz' => {
-          :Name => 'Novell Bugzilla',
-          :URL => 'https://bugzilla.novell.com',
-          :User => 'account@example.com',
-          :Password => 'blahblahblah',
-          :ProductAliases => {
+          Name: 'Novell Bugzilla',
+          URL: 'https://bugzilla.novell.com',
+          User: 'account@example.com',
+          Password: 'blahblahblah',
+          ProductAliases: {
             'Security' => 'SUSE Security Incidents'
           },
-          :Plugin => 'ruby-bugzilla/nvbugzilla.rb'
+          Plugin: 'ruby-bugzilla/nvbugzilla.rb'
         }
       }
 
@@ -192,7 +191,7 @@ module BzConsole
 
       fname = opts[:config].nil? ? @defaultyamlfile : opts[:config]
       if File.exist?(fname)
-        raise ".bzconsole.yml already exists. please remove it first to proceed to the next step."
+        raise '.bzconsole.yml already exists. please remove it first to proceed to the next step.'
       end
       File.open(fname, File::CREAT | File::WRONLY, 0o600) do |f|
         f.write(template.to_yaml)
@@ -220,11 +219,11 @@ module BzConsole
     def do(argv, opts)
       conf = read_config(opts)
       conf.freeze
-      cconf = read_config({ :config => opts[:command][:output] })
+      cconf = read_config(config: opts[:command][:output])
       argv.each do |prefix|
-        raise ArgumentError, "No prefix to log in" if prefix.nil?
+        raise ArgumentError, 'No prefix to log in' if prefix.nil?
         unless conf.include?(prefix)
-          raise RuntimeError, format('No host information for %s', prefix)
+          raise format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -235,9 +234,9 @@ module BzConsole
         user = Bugzilla::User.new(xmlrpc)
 
         begin
-          result = user.login({ 'login' => login, 'password' => pass, 'remember' => true })
+          result = user.login('login' => login, 'password' => pass, 'remember' => true)
           cconf[host] = xmlrpc.cookie
-          save_config({ :config => opts[:command][:output] }, cconf)
+          save_config({ config: opts[:command][:output] }, cconf)
         rescue XMLRPC::FaultException => e
           printf("E: %s\n", e.message)
         end
@@ -294,7 +293,7 @@ module BzConsole
           printf("Assinged To:\t%s\n", result['assigned_to'])
           printf("Priority:\t%s\n", result['priority'])
           printf("Severity:\t%s\n", result['severity'])
-          result.keys.reject { |x| ['id', 'summary', 'status', 'resolution', 'product', 'version', 'component', 'assigned_to', 'priority', 'severity', 'comments'].include?(x) }.each do |x|
+          result.keys.reject { |x| %w[id summary status resolution product version component assigned_to priority severity comments].include?(x) }.each do |x|
             printf("%s:\t%s\n", x.capitalize, result[x].respond_to?(:to_time) ? result[x].to_time : result[x])
           end
           printf("Comments:\t%d\n\n", result['comments'].length)
@@ -321,7 +320,7 @@ module BzConsole
           raise ArgumentError, format('No prefix specified for Bug#%s', bugn)
         end
         unless conf.include?(prefix)
-          raise RuntimeError, format('No host information for %s', prefix)
+          raise format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -343,10 +342,10 @@ module BzConsole
 
           result = nil
           result = if opts[:command][:summary] == true
-            bug.get_bugs(nnn.split(','))
-          elsif opts[:command][:details] == true
+                     bug.get_bugs(nnn.split(','))
+                   elsif opts[:command][:details] == true
             bug.get_bugs(nnn.split(','), ::Bugzilla::Bug::FIELDS_DETAILS)
-          else
+                   else
             bug.get_bugs(nnn.split(','), nil)
                    end
 
@@ -433,7 +432,7 @@ module BzConsole
       conf.freeze
       argv.each do |prefix|
         unless conf.include?(prefix)
-          raise RuntimeError, format('No host information for %s', prefix)
+          raise format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -457,19 +456,19 @@ module BzConsole
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
-            opts[:command][:query][:product].map! do |x|
-              info.include?(:ProductAliases) &&
+          opts[:command][:query][:product].map! do |x|
+            info.include?(:ProductAliases) &&
               info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x end if opts[:command][:query].include?(:product)
 
-            result = bug.search(opts[:command][:query])
+          result = bug.search(opts[:command][:query])
 
-            @plugin.run(:post, host, :search, result)
+          @plugin.run(:post, host, :search, result)
 
-            if result.include?('bugs')
-              result['bugs'].each do |r|
-                  yield r
-              end
+          if result.include?('bugs')
+            result['bugs'].each do |r|
+              yield r
             end
+          end
         end
       end
     end # def real_do
@@ -516,7 +515,7 @@ module BzConsole
       conf.freeze
       argv.each do |prefix|
         unless conf.include?(prefix)
-          raise RuntimeError, format('No host information for %s', prefix)
+          raise format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -684,7 +683,7 @@ module BzConsole
       conf.freeze
       argv.each do |prefix|
         unless conf.include?(prefix)
-          raise RuntimeError, format('No host information for %s', prefix)
+          raise format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -726,84 +725,84 @@ module BzConsole
 
               # don't rely on the status to deal with NEW bugs.
               # unable to estimate the case bugs closed quickly
-              if opts[:command][:metrics][:x_coordinate] == :weekly
-                d = Date.new(ts.year, ts.month, ts.day)
-                de = Date.commercial(d.year, d.cweek, 7)
-                drange = [ts, Time.utc(de.year, de.month, de.day, 23, 59, 59)]
-              else
-                drange = [ts, Time.utc(ts.year, ts.month + 1, 1) - 1]
-              end
+            if opts[:command][:metrics][:x_coordinate] == :weekly
+              d = Date.new(ts.year, ts.month, ts.day)
+              de = Date.commercial(d.year, d.cweek, 7)
+              drange = [ts, Time.utc(de.year, de.month, de.day, 23, 59, 59)]
+            else
+              drange = [ts, Time.utc(ts.year, ts.month + 1, 1) - 1]
+            end
 
-              searchopts[:creation_time] = drange
+            searchopts[:creation_time] = drange
 
-              @plugin.run(:pre, host, :metrics, searchopts)
+            @plugin.run(:pre, host, :metrics, searchopts)
 
-              result = bug.search(searchopts)
+            result = bug.search(searchopts)
 
-              @plugin.run(:post, host, :search, result)
+            @plugin.run(:post, host, :search, result)
 
-              new = result.include?('bugs') ? result['bugs'].length : 0
+            new = result.include?('bugs') ? result['bugs'].length : 0
 
               # for open bugs
               # what we are interested in here would be how many bugs still keeps open.
-              searchopts = opts[:command][:query].clone
-              searchopts[:last_change_time] = drange
-              searchopts[:status] = '__open__'
+            searchopts = opts[:command][:query].clone
+            searchopts[:last_change_time] = drange
+            searchopts[:status] = '__open__'
 
-              @plugin.run(:pre, host, :metrics, searchopts)
+            @plugin.run(:pre, host, :metrics, searchopts)
 
-              result = bug.search(searchopts)
+            result = bug.search(searchopts)
 
-              @plugin.run(:post, host, :search, result)
+            @plugin.run(:post, host, :search, result)
 
-              assigned = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'ASSIGNED' ? x : nil }.compact.length : 0
-              modified = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'MODIFIED' ? x : nil }.compact.length : 0
-              on_qa = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'ON_QA' ? x : nil }.compact.length : 0
+            assigned = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'ASSIGNED' ? x : nil }.compact.length : 0
+            modified = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'MODIFIED' ? x : nil }.compact.length : 0
+            on_qa = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'ON_QA' ? x : nil }.compact.length : 0
 
               # send a separate query for closed.
               # just counting CLOSED the above is meaningless.
               # what we are interested in here would be how much bugs are
               # actually closed, but not how many closed bugs one worked on.
-              searchopts = opts[:command][:query].clone
-              searchopts[:last_change_time] = drange
-              searchopts[:status] = 'CLOSED'
+            searchopts = opts[:command][:query].clone
+            searchopts[:last_change_time] = drange
+            searchopts[:status] = 'CLOSED'
 
-              @plugin.run(:pre, host, :metrics, searchopts)
+            @plugin.run(:pre, host, :metrics, searchopts)
 
-              result = bug.search(searchopts)
+            result = bug.search(searchopts)
 
-              @plugin.run(:post, host, :search, result)
+            @plugin.run(:post, host, :search, result)
 
-              closed = result.include?('bugs') ? result['bugs'].length : 0
+            closed = result.include?('bugs') ? result['bugs'].length : 0
 
               # obtain the information for open bugs that closed now
-              searchopts = opts[:command][:query].clone
-              searchopts[:status] = 'CLOSED'
-              searchopts[:metrics_closed_after] = drange[1] + 1
+            searchopts = opts[:command][:query].clone
+            searchopts[:status] = 'CLOSED'
+            searchopts[:metrics_closed_after] = drange[1] + 1
 
-              @plugin.run(:pre, host, :metrics, searchopts)
+            @plugin.run(:pre, host, :metrics, searchopts)
 
-              result = bug.search(searchopts)
+            result = bug.search(searchopts)
 
-              @plugin.run(:post, host, :search, result)
+            @plugin.run(:post, host, :search, result)
 
-              open_bugs = result.include?('bugs') ? result['bugs'].length : 0
+            open_bugs = result.include?('bugs') ? result['bugs'].length : 0
 
               # obtain the information for open bugs
-              searchopts = opts[:command][:query].clone
-              searchopts[:metrics_not_closed] = drange[1]
+            searchopts = opts[:command][:query].clone
+            searchopts[:metrics_not_closed] = drange[1]
 
-              @plugin.run(:pre, host, :metrics, searchopts)
+            @plugin.run(:pre, host, :metrics, searchopts)
 
-              result = bug.search(searchopts)
+            result = bug.search(searchopts)
 
-              @plugin.run(:post, host, :search, result)
+            @plugin.run(:post, host, :search, result)
 
-              open_bugs += result.include?('bugs') ? result['bugs'].length : 0
+            open_bugs += result.include?('bugs') ? result['bugs'].length : 0
 
-              yield ts, new, assigned, modified, on_qa, closed, open_bugs
+            yield ts, new, assigned, modified, on_qa, closed, open_bugs
 
-              ts = drange[1] + 1
+            ts = drange[1] + 1
           end # while
         end
       end
@@ -862,7 +861,7 @@ module BzConsole
       # not supporting filing a bug to multiple bugzilla
       prefix = argv[0]
       unless conf.include?(prefix)
-        raise RuntimeError, format('No host information for %s', prefix)
+        raise format('No host information for %s', prefix)
       end
 
       info = conf[prefix]
@@ -955,7 +954,7 @@ module BzConsole
           else
             ncomment += 1
             et = comment['creation_time'].to_time
-            total += (et - st) if !st.nil?
+            total += (et - st) unless st.nil?
             st = et
             notyetrespond = false
           end
@@ -976,7 +975,7 @@ module BzConsole
       conf.freeze
       argv.each do |prefix|
         unless conf.include?(prefix)
-          raise RuntimeError, format('No host information for %s', prefix)
+          raise format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -1015,7 +1014,6 @@ module BzConsole
         end
       end
     end # def real_do
-
   end # class
 end # module BzConsole
 
@@ -1040,13 +1038,13 @@ begin
 
     if !subargv.empty?
       n = cmds.index(command.to_sym)
-      unless n.nil?
-        opts[:instance] = eval("BzConsole::#{cmds[n].to_s.capitalize}.new(Bugzilla::Plugin::Template.new)")
-        subargv = opts[:instance].parse(opt, subargv[1..-1], opts[:command])
-      else
+      if n.nil?
         STDERR.printf("E: Unknown command: %s\n", subargv[0])
         STDERR.printf("   Available commands: %s\n", cmds.join(' '))
         exit 1
+      else
+        opts[:instance] = eval("BzConsole::#{cmds[n].to_s.capitalize}.new(Bugzilla::Plugin::Template.new)")
+        subargv = opts[:instance].parse(opt, subargv[1..-1], opts[:command])
       end
     else
       opt.separator ''

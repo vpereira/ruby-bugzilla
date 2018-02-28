@@ -15,10 +15,11 @@ Gem::Specification.new do |s|
   s.license     = 'LGPL-3.0+'
   s.required_rubygems_version = '>= 1.3.6'
   s.add_development_dependency 'rspec', '~> 2.0'
+  s.add_development_dependency 'rubocop'
   s.add_runtime_dependency 'gruff', '~> 0'
   s.add_runtime_dependency 'highline'
   s.add_runtime_dependency 'rake', '< 11.0'
-  s.add_runtime_dependency 'xmlrpc'
+  s.add_runtime_dependency 'xmlrpc', '~> 0.3.0'
 
   # seems like gruff is missing this one
   # s.add_runtime_dependency "rmagick", "~> 0"

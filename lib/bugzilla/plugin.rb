@@ -18,42 +18,41 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bugzilla
-# rdoc
-#
-# === Bugzilla::Plugin
-#
+  # rdoc
+  #
+  # === Bugzilla::Plugin
+  #
 
   module Plugin
-# rdoc
-#
-# ==== Bugzilla::Plugin::Template
-#
+    # rdoc
+    #
+    # ==== Bugzilla::Plugin::Template
+    #
 
     class Template
       @@plugins = []
 
       def initialize
-         @hostname = nil
+        @hostname = nil
       end # def initialize
 
       attr_reader :hostname
 
       def self.inherited(subclass)
-         @@plugins << subclass
+        @@plugins << subclass
       end # def inherited
 
       def run(hook, host, *args)
         @@plugins.each do |k|
           i = k.new
-          if i.hostname == host || host.nil?
-            case hook
-            when :parser
-                i.parserhook(*args)
-            when :pre
-                i.prehook(*args)
-            when :post
-                i.posthook(*args)
-            end
+          next unless i.hostname == host || host.nil?
+          case hook
+          when :parser
+            i.parserhook(*args)
+          when :pre
+            i.prehook(*args)
+          when :post
+            i.posthook(*args)
           end
         end
       end # def run

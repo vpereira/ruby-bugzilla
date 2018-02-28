@@ -5,6 +5,9 @@ require 'bundler'
 Bundler::GemHelper.install_tasks
 
 require 'rspec/core/rake_task'
+require 'rubocop/rake_task'
+
+RuboCop::RakeTask.new
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = 'spec/**/*_spec.rb'
@@ -27,10 +30,7 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-# task :build do
-#   system "gem build ruby-bugzilla.gemspec"
-# end
-#
-# task :install => :build do
-#   system "sudo gem install ruby-bugzilla-#{Bugzilla::VERSION}.gem"
-# end
+desc "Open an irb session preloaded with ruby-bugzilla"
+task :console do
+  sh "irb -rubygems -I lib -r bugzilla.rb"
+end

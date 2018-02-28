@@ -30,7 +30,6 @@ module Bugzilla
     #
     # ==== Bugzilla::XMLRPC#new(host, port = 443, path = '/xmlrpc.cgi', proxy_host = nil, proxy_port = nil)
     #
-
     def initialize(host, port = 443, path = '/xmlrpc.cgi', proxy_host = nil, proxy_port = nil, timeout = 60, http_basic_auth_user = nil, http_basic_auth_pass = nil)
       path ||= '/xmlrpc.cgi'
       use_ssl = port == 443
@@ -39,6 +38,10 @@ module Bugzilla
       # workaround for https://bugs.ruby-lang.org/issues/8182
       @xmlrpc.http_header_extra = { 'accept-encoding' => 'identity' }
     end # def initialize
+
+    def use_ssl?
+      @xmlrpc.http.use_ssl?
+    end
 
     # rdoc
     #

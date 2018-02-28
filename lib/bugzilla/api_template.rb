@@ -29,7 +29,7 @@ module Bugzilla
   class APITemplate < Skeleton
     def initialize(iface)
       super
-
+      # iface is a Bugzilla::XMLRPC object
       @bz = Bugzilla.new(iface)
     end # def initialize
 
