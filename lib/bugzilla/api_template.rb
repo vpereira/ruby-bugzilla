@@ -1,4 +1,4 @@
-# api_tmpl.rb
+# api_template.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
 # Authors:
