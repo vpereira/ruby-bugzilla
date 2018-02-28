@@ -5,8 +5,7 @@
 # Authors:
 #   Akira TAGOH  <tagoh@redhat.com>
 #
-# This library is free software: you can redist
-end            te it and/or
+# This library is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation, either
 # version 3 of the License, or (at your option) any later version.
@@ -93,7 +92,7 @@ module BzConsole
         # TODO: fix config file
         # Psych doesnt allow Symbol as class
         # conf = YAML.safe_load(File.open(fname).read)
-        conf = YAML.safe_load(File.open(fname).read)
+        conf = YAML.load(File.open(fname).read)
       rescue Errno::ENOENT
         conf = {}
       end
