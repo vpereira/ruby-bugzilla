@@ -32,37 +32,20 @@ begin
   require 'bugzilla/user'
   require 'bugzilla/plugin'
   require 'bugzilla/bug'
+  require 'bugzilla/utils'
 rescue LoadError
   $LOAD_PATH.push(File.join(File.dirname(__FILE__), '..', 'lib'))
   require 'bugzilla/xmlrpc'
   require 'bugzilla/user'
   require 'bugzilla/plugin'
   require 'bugzilla/bug'
+  require 'bugzilla/utils'
 end
 
-module BzConsole
-  module Utils
-    def get_xmlrpc(conf = {}, opts = {})
-      info = conf
-      uri = URI.parse(info[:URL])
-      host = uri.host
-      port = uri.port
-      path = uri.path.empty? ? nil : uri.path
-      proxy_host, proxy_port = get_proxy(info)
-      timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
-      yield host if block_given? # if you want to run some pre hook
-      xmlrpc = Bugzilla::XMLRPC.new(host, port:port, path: path, proxy_host:
-                                    proxy_host, proxy_port: proxy_port, timeout:
-                                    timeout, http_basic_auth_user: uri.user, http_basic_auth_pass: uri.password, debug: opts[:debug])
-      [xmlrpc, host]
-    end
-  end
-end
 
 module BzConsole
   class CommandTemplate
-    include Utils
-
+    include Bugzilla::Utils
     def initialize(plugin)
       @n_args = 0
       @defaultyamlfile = File.join(ENV['HOME'], '.bzconsole.yml')
@@ -114,16 +97,6 @@ module BzConsole
       end
       File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
     end # def save_config
-
-    private
-
-    def get_proxy(info)
-      uri = info[:Proxy] || ENV['http_proxy']
-      proxy_uri = uri.nil? ? nil : URI.parse(uri)
-      proxy_host = proxy_uri.nil? ? nil : proxy_uri.host
-      proxy_port = proxy_uri.nil? ? nil : proxy_uri.port
-      [proxy_host, proxy_port]
-    end
   end # class CommandTemplate
 
   class Setup < CommandTemplate
@@ -1023,7 +996,7 @@ module BzConsole
   end # class
 end # module BzConsole
 
-begin
+if $0 == __FILE__
   opts = {}
   opts[:command] = {}
   subargv = []
@@ -1066,6 +1039,5 @@ begin
       exit
     end
   end
-
   opts[:instance].do(subargv, opts)
 end
