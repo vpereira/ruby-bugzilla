@@ -5,4 +5,4 @@ before_install:
     - sudo apt-get -qq update
     - sudo apt-get install -y libxml2-dev libmagickcore-dev libmagickwand-dev
 script:
-  - rake spec
+  - bundle exec rake spec
