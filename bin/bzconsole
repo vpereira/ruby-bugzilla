@@ -53,7 +53,7 @@ module BzConsole
       yield host if block_given? # if you want to run some pre hook
       xmlrpc = Bugzilla::XMLRPC.new(host, port:port, path: path, proxy_host:
                                     proxy_host, proxy_port: proxy_port, timeout:
-                                    timeout, http_basic_auth_user: uri.user, http_basic_auth_pass: uri.password)
+                                    timeout, http_basic_auth_user: uri.user, http_basic_auth_pass: uri.password, debug: opts[:debug])
       [xmlrpc, host]
     end
   end
@@ -452,8 +452,9 @@ module BzConsole
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
         @plugin.run(:pre, host, :search, opts[:command][:query])
-
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port:port, path: path, proxy_host:
+                                      proxy_host, proxy_port: proxy_port, timeout:
+                                      timeout, http_basic_auth_user: uri.user, http_basic_auth_pass: uri.password, debug: opts[:debug])
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
@@ -536,7 +537,9 @@ module BzConsole
 
         @plugin.run(:pre, host, :show, opts)
 
-        xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+        xmlrpc = Bugzilla::XMLRPC.new(host, port:port, path: path, proxy_host:
+                                      proxy_host, proxy_port: proxy_port, timeout:
+                                      timeout, http_basic_auth_user: uri.user, http_basic_auth_pass: uri.password, debug: opts[:debug])
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           if opts[:command][:show][:mode] == :field
@@ -877,7 +880,9 @@ module BzConsole
 
       @plugin.run(:pre, host, :newbug, opts)
 
-      xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
+      xmlrpc = Bugzilla::XMLRPC.new(host, port:port, path: path, proxy_host:
+                                    proxy_host, proxy_port: proxy_port, timeout:
+                                    timeout, http_basic_auth_user: uri.user, http_basic_auth_pass: uri.password, debug: opts[:debug])
       user = Bugzilla::User.new(xmlrpc)
       user.session(login, pass) do
         bug = Bugzilla::Bug.new(xmlrpc)
@@ -1029,7 +1034,8 @@ begin
     opt.separator 'Global options:'
     opt.on('-c', '--config=FILE', 'read FILE as the configuration file.') { |v| opts[:config] = v }
     opt.on('-t', '--timeout=SEC', 'Set XMLRPC timeout in a second.') { |v| opts[:timeout] = v.to_i }
-    opt.on('-h', '--help', 'show this message') { |_x| opts[:help] = true }
+    opt.on('-d', '--debug') { |v| opts[:debug] = true }
+    opt.on('-h', '--help', 'show this message') { |v| opts[:help] = true }
 
     cmds = BzConsole.constants.sort.map { |x| (k = eval("BzConsole::#{x}")).class == Class && x != :CommandTemplate ? x.downcase.to_sym : nil }.compact
 
