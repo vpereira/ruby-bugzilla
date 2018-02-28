@@ -5,7 +5,7 @@ describe Bugzilla::Utils do
     class Foo
       include Bugzilla::Utils
     end
-    @info = {URL: 'https://foo.example.org:443/', Proxy: 'http://bar.example.org:8080'}
+    @info = { URL: 'https://foo.example.org:443/', Proxy: 'http://bar.example.org:8080' }
   end
   describe 'get_xmlrpc' do
     it 'should return an array' do

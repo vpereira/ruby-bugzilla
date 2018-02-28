@@ -17,10 +17,10 @@ module Bugzilla
       proxy_host, proxy_port = get_proxy(info)
       timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
       yield host if block_given? # if you want to run some pre hook
-      xmlrpc = XMLRPC.new(host, port:port, path: path, proxy_host:
+      xmlrpc = XMLRPC.new(host, port: port, path: path, proxy_host:
                                     proxy_host, proxy_port: proxy_port, timeout:
                                     timeout, http_basic_auth_user: uri.user,
-                                    http_basic_auth_pass: uri.password, debug: opts[:debug])
+                                http_basic_auth_pass: uri.password, debug: opts[:debug])
       [xmlrpc, host]
     end
   end
