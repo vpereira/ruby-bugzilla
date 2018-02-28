@@ -5,8 +5,7 @@
 # Authors:
 #   Akira TAGOH  <tagoh@redhat.com>
 #
-# This library is free software: you can re
-}            stribute it and/or
+# This library is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation, either
 # version 3 of the License, or (at your option) any later version.
@@ -90,7 +89,10 @@ module BzConsole
     def read_config(opts)
       fname = opts[:config].nil? ? @defaultyamlfile : opts[:config]
       begin
-        conf = YAML.safe_load(File.open(fname).read)
+        # TODO fix config file
+        # Psych doesnt allow Symbol as class
+        # conf = YAML.safe_load(File.open(fname).read)
+        conf = YAML.load(File.open(fname).read)
       rescue Errno::ENOENT
         conf = {}
       end
@@ -455,7 +457,7 @@ module BzConsole
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
-            opts[:command][:query][:product].map! do |x| 
+            opts[:command][:query][:product].map! do |x|
               info.include?(:ProductAliases) &&
               info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x end if opts[:command][:query].include?(:product)
 

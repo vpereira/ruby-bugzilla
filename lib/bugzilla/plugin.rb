@@ -45,15 +45,16 @@ module Bugzilla
       def run(hook, host, *args)
         @@plugins.each do |k|
           i = k.new
-        if i.hostname == host || host.nil?
-          case hook
-          when :parser
-              i.parserhook(*args)
-          when :pre
-              i.prehook(*args)
-          when :post
-              i.posthook(*args)
+          if i.hostname == host || host.nil?
+            case hook
+            when :parser
+                i.parserhook(*args)
+            when :pre
+                i.prehook(*args)
+            when :post
+                i.posthook(*args)
             end
+          end
         end
       end # def run
 
