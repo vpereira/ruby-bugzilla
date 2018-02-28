@@ -39,26 +39,16 @@ module Bugzilla
     #
 
     def session(user, password)
-      r = check_version('4.4.3')
-      # if version supported, use token, otherwise cookie
-      if r[0]
-        key = :token
-        fname = File.join(ENV['HOME'], '.ruby-bugzilla-token.yml')
-      else
-        key = :cookie
-        fname = File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')
-      end
+      key, fname = authentication_method
+
       # TODO
       # make those variables available
       host = @iface.instance_variable_get(:@xmlrpc).instance_variable_get(:@host)
-      val = nil
 
-      if File.exist?(fname) && File.lstat(fname).mode & 0o600 == 0o600
-        conf = YAML.safe_load(File.open(fname).read)
-        val = conf[host]
-      else
-        conf = {}
-      end
+      conf = load_authentication_token(fname)
+
+      val = conf.fetch(host, nil)
+
       if !val.nil?
         if key == :token
           @iface.token = val
@@ -73,13 +63,10 @@ module Bugzilla
         login('login' => user, 'password' => password, 'remember' => true)
         yield
       end
-      conf[host] = if key == :token
-                     @iface.token
-                   else
-                     @iface.cookie
-                   end
-      File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
 
+      conf[host] = @iface.send(key) if %i[token cookie].include? key
+
+      save_authentication_token(fname, conf)
       key
     end # def session
 
@@ -131,15 +118,29 @@ module Bugzilla
 
     protected
 
+    def load_authentication_token(fname)
+      if File.exist?(fname) && File.lstat(fname).mode & 0o600 == 0o600
+        YAML.safe_load(File.open(fname).read)
+      else
+        {}
+      end
+    end
+
+    def save_authentication_token(fname, conf)
+      File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
+    end
+
     def is_token_supported?
-      check_version('4.4.3')[0] == true ? true : false rescue false
+      check_version('4.4.3')[0] == true
+    rescue StandardError
+      false
     end
 
     # it returns an array with authentication type and the name of the storage
     def authentication_method
       # if version supported, use token, otherwise cookie
       if is_token_supported?
-        [:token, File.join(ENV['HOME'], '.ruby-bugzilla-token.yml') ]
+        [:token, File.join(ENV['HOME'], '.ruby-bugzilla-token.yml')]
       else
         [:cookie, File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')]
       end
