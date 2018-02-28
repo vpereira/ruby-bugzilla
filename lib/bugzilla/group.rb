@@ -20,19 +20,16 @@
 require 'bugzilla/api_tmpl'
 
 module Bugzilla
-
-=begin rdoc
-
-=== Bugzilla::Group
-
-Bugzilla::Group class is to access
-the Bugzilla::WebService::Group API that allows you to
-create Groups and get information about them.
-
-=end
+  # rdoc
+  #
+  # === Bugzilla::Group
+  #
+  # Bugzilla::Group class is to access
+  # the Bugzilla::WebService::Group API that allows you to
+  # create Groups and get information about them.
+  #
 
   class Group < APITemplate
-
     protected
 
     def __create(cmd, *args)
@@ -42,7 +39,5 @@ create Groups and get information about them.
     def __update(cmd, *args)
       # FIXME
     end # def _update
-
   end # class Group
-
 end # module Bugzilla

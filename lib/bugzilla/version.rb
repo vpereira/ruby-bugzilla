@@ -17,15 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-=begin rdoc
-
-== Bugzilla
-
-=end
+# rdoc
+#
+# == Bugzilla
+#
 
 module Bugzilla
-
-  VERSION = "0.6.4"
-
+  VERSION = '0.6.4'.freeze
 end # module Bugzilla

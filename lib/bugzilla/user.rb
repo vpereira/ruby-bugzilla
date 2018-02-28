@@ -21,31 +21,27 @@ require 'yaml'
 require 'bugzilla/api_tmpl'
 
 module Bugzilla
-
-=begin rdoc
-
-=== Bugzilla::User
-
-Bugzilla::User class is to access the
-Bugzilla::WebService::User API that allows you to create
-User Accounts and log in/out using an existing account.
-
-=end
+  # rdoc
+  #
+  # === Bugzilla::User
+  #
+  # Bugzilla::User class is to access the
+  # Bugzilla::WebService::User API that allows you to create
+  # User Accounts and log in/out using an existing account.
+  #
 
   class User < APITemplate
-
-=begin rdoc
-
-==== Bugzilla::User#session(user, password)
-
-Keeps the bugzilla session during doing something in the block.
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::User#session(user, password)
+    #
+    # Keeps the bugzilla session during doing something in the block.
+    #
 
     def session(user, password)
       r = check_version('4.4.3')
 
-      if r[0] then
+      if r[0]
         key = :token
         fname = File.join(ENV['HOME'], '.ruby-bugzilla-token.yml')
       else
@@ -55,99 +51,94 @@ Keeps the bugzilla session during doing something in the block.
       host = @iface.instance_variable_get(:@xmlrpc).instance_variable_get(:@host)
       val = nil
 
-      if File.exist?(fname) && File.lstat(fname).mode & 0600 == 0600 then
-        conf = YAML.load(File.open(fname).read)
+      if File.exist?(fname) && File.lstat(fname).mode & 0o600 == 0o600
+        conf = YAML.safe_load(File.open(fname).read)
         val = conf[host]
       else
         conf = {}
       end
-      if !val.nil? then
-        if key == :token then
+      if !val.nil?
+        if key == :token
           @iface.token = val
         else
           @iface.cookie = val
         end
         yield
-      elsif user.nil? || password.nil? then
+      elsif user.nil? || password.nil?
         yield
         return
       else
-        login({'login'=>user, 'password'=>password, 'remember'=>true})
+        login('login' => user, 'password' => password, 'remember' => true)
         yield
       end
-      if key == :token then
-        conf[host] = @iface.token
-      else
-        conf[host] = @iface.cookie
-      end
-      File.open(fname, 'w') {|f| f.chmod(0600); f.write(conf.to_yaml)}
+      conf[host] = if key == :token
+                     @iface.token
+                   else
+                     @iface.cookie
+                   end
+      File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
 
-      return key
+      key
     end # def session
 
-=begin rdoc
-
-==== Bugzilla::User#get_userinfo(params)
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::User#get_userinfo(params)
+    #
 
     def get_userinfo(user)
       p = {}
       ids = []
       names = []
 
-      if user.kind_of?(Array) then
+      if user.is_a?(Array)
         user.each do |u|
-          names << u if u.kind_of?(String)
-          id << u if u.kind_of?(Integer)
+          names << u if u.is_a?(String)
+          id << u if u.is_a?(Integer)
         end
-      elsif user.kind_of?(String) then
-	names << user
-      elsif user.kind_of?(Integer) then
-	ids << user
+      elsif user.is_a?(String)
+        names << user
+      elsif user.is_a?(Integer)
+        ids << user
       else
-        raise ArgumentError, sprintf("Unknown type of arguments: %s", user.class)
+        raise ArgumentError, format('Unknown type of arguments: %s', user.class)
       end
 
-      result = get({'ids'=>ids, 'names'=>names})
+      result = get('ids' => ids, 'names' => names)
 
       result['users']
     end # def get_userinfo
 
-=begin rdoc
+    # rdoc
+    #
+    # ==== Bugzilla::User#login(params)
+    #
+    # Raw Bugzilla API to log into Bugzilla.
+    #
+    # See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
+    #
 
-==== Bugzilla::User#login(params)
-
-Raw Bugzilla API to log into Bugzilla.
-
-See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
-
-=end
-
-=begin rdoc
-
-==== Bugzilla::User#logout
-
-Raw Bugzilla API to log out the user.
-
-See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::User#logout
+    #
+    # Raw Bugzilla API to log out the user.
+    #
+    # See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
+    #
 
     protected
 
     def _login(cmd, *args)
-      raise ArgumentError, "Invalid parameters" unless args[0].kind_of?(Hash)
+      raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
-      res = @iface.call(cmd,args[0])
-      unless res['token'].nil? then
-        @iface.token = res['token']
-      end
+      res = @iface.call(cmd, args[0])
+      @iface.token = res['token'] unless res['token'].nil?
 
-      return res
+      res
     end # def _login
 
-    def _logout(cmd, *args)
+    def _logout(cmd, *_args)
       @iface.call(cmd)
     end # def _logout
 
@@ -164,13 +155,11 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/User.html
     end # def _update
 
     def _get(cmd, *args)
-      raise ArgumentError, "Invalid parameters" unless args[0].kind_of?(Hash)
+      raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
       requires_version(cmd, 3.4)
       res = @iface.call(cmd, args[0])
       # FIXME
     end # def _get
-
   end # class User
-
 end # module Bugzilla

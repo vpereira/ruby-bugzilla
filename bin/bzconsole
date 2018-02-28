@@ -1,12 +1,12 @@
 #! /usr/bin/env ruby
-# -*- coding: utf-8 -*-
 # bzconsole
 # Copyright (C) 2010-2014 Red Hat, Inc.
 #
 # Authors:
 #   Akira TAGOH  <tagoh@redhat.com>
 #
-# This library is free software: you can redistribute it and/or
+# This library is free software: you can re
+}            stribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation, either
 # version 3 of the License, or (at your option) any later version.
@@ -34,7 +34,7 @@ begin
   require 'bugzilla/plugin'
   require 'bugzilla/bug'
 rescue LoadError
-  $:.push(File.join(File.dirname(__FILE__), '..', 'lib'))
+  $LOAD_PATH.push(File.join(File.dirname(__FILE__), '..', 'lib'))
   require 'bugzilla/xmlrpc'
   require 'bugzilla/user'
   require 'bugzilla/plugin'
@@ -43,7 +43,7 @@ end
 
 module BzConsole
   module Utils
-    def get_xmlrpc(conf = {},opts = {})
+    def get_xmlrpc(conf = {}, opts = {})
       info = conf
       uri = URI.parse(info[:URL])
       host = uri.host
@@ -53,29 +53,27 @@ module BzConsole
       timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
       yield host if block_given? # if you want to run some pre hook
       xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
-      [xmlrpc,host]
+      [xmlrpc, host]
     end
   end
 end
 
 module BzConsole
-
   class CommandTemplate
-
     include Utils
 
     def initialize(plugin)
       @n_args = 0
-      @defaultyamlfile = File.join(ENV['HOME'], ".bzconsole.yml")
+      @defaultyamlfile = File.join(ENV['HOME'], '.bzconsole.yml')
       @plugin = plugin
     end # def initialize
 
     attr_reader :n_args
 
     def parse(parser, argv, opts)
-      raise RuntimeError, sprintf("No implementation for %s", self.class) if self.class =~ /CommandTemplate/
+      raise RuntimeError, format('No implementation for %s', self.class) if self.class =~ /CommandTemplate/
 
-      parser.on('-h', '--help', 'show this message') {|x| opts[:help] = true}
+      parser.on('-h', '--help', 'show this message') { |_x| opts[:help] = true }
 
       read_config(opts)
       @plugin.run(:parser, nil, parser, argv, opts)
@@ -83,8 +81,8 @@ module BzConsole
       parser.order(argv)
     end # def parse
 
-    def do(argv)
-      raise RuntimeError, sprintf("No implementation for %s", self.class)
+    def do(_argv)
+      raise RuntimeError, format('No implementation for %s', self.class)
     end # def do
 
     protected
@@ -92,12 +90,12 @@ module BzConsole
     def read_config(opts)
       fname = opts[:config].nil? ? @defaultyamlfile : opts[:config]
       begin
-        conf = YAML.load(File.open(fname).read)
+        conf = YAML.safe_load(File.open(fname).read)
       rescue Errno::ENOENT
         conf = {}
       end
-      conf.each do |k, v|
-        if v.kind_of?(Hash) && v.include?(:Plugin) then
+      conf.each do |_k, v|
+        if v.is_a?(Hash) && v.include?(:Plugin)
           load(v[:Plugin])
         end
       end
@@ -106,106 +104,102 @@ module BzConsole
 
     def save_config(opts, conf)
       fname = opts[:config].nil? ? @defaultyamlfile : opts[:config]
-      if File.exist?(fname) then
+      if File.exist?(fname)
         st = File.lstat(fname)
-        if st.mode & 0600 != 0600 then
-          raise RuntimeError, sprintf("The permissions of %s has to be 0600", fname)
+        if st.mode & 0o600 != 0o600
+          raise RuntimeError, format('The permissions of %s has to be 0600', fname)
         end
       end
-      File.open(fname, "w") {|f| f.chmod(0600); f.write(conf.to_yaml)}
+      File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
     end # def save_config
 
     private
 
     def get_proxy(info)
-      uri = info[:Proxy] || ENV["http_proxy"]
+      uri = info[:Proxy] || ENV['http_proxy']
       proxy_uri = uri.nil? ? nil : URI.parse(uri)
       proxy_host = proxy_uri.nil? ? nil : proxy_uri.host
       proxy_port = proxy_uri.nil? ? nil : proxy_uri.port
-      return proxy_host, proxy_port
+      [proxy_host, proxy_port]
     end
-
   end # class CommandTemplate
 
   class Setup < CommandTemplate
-
     def initialize(plugin)
       super
       @n_args = 0
     end # def initialize
 
     def parse(parser, argv, opts)
-      parser.banner = sprintf("Usage: %s [global options] setup", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Command options:"
+      parser.banner = format('Usage: %s [global options] setup', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Command options:'
 
       super
     end # def parse
 
-    def do(argv, opts)
+    def do(_argv, opts)
       template = {
-        "rhbz"=>{
-          :Name=>"Red Hat Bugzilla",
-          :URL=>"https://bugzilla.redhat.com",
-          :User=>"account@example.com",
-          :Password=>"blahblahblah",
-          :ProductAliases=>{
-            'RHEL3'=>'Red Hat Enterprise Linux 3',
-            'RHEL4'=>'Red Hat Enterprise Linux 4',
-            'RHEL5'=>'Red Hat Enterprise Linux 5',
-            'RHEL6'=>'Red Hat Enterprise Linux 6',
-            'Security'=>'Security Response'          
+        'rhbz' => {
+          :Name => 'Red Hat Bugzilla',
+          :URL => 'https://bugzilla.redhat.com',
+          :User => 'account@example.com',
+          :Password => 'blahblahblah',
+          :ProductAliases => {
+            'RHEL3' => 'Red Hat Enterprise Linux 3',
+            'RHEL4' => 'Red Hat Enterprise Linux 4',
+            'RHEL5' => 'Red Hat Enterprise Linux 5',
+            'RHEL6' => 'Red Hat Enterprise Linux 6',
+            'Security' => 'Security Response'
           },
-          :Plugin=>"ruby-bugzilla/rhbugzilla.rb"
+          :Plugin => 'ruby-bugzilla/rhbugzilla.rb'
         },
-        "gnbz"=>{
-          :Name=>"GNOME Bugzilla",
-          :URL=>"https://bugzilla.gnome.org",
-          :User=>"account@example.com",
-          :Password=>"blahblahblah",
+        'gnbz' => {
+          :Name => 'GNOME Bugzilla',
+          :URL => 'https://bugzilla.gnome.org',
+          :User => 'account@example.com',
+          :Password => 'blahblahblah'
         },
-        "fdobz"=>{
-          :Name=>"FreeDesktop Bugzilla",
-          :URL=>"https://bugs.freedesktop.org",
-          :User=>"account@example.com",
-          :Password=>"blahblahblah",
+        'fdobz' => {
+          :Name => 'FreeDesktop Bugzilla',
+          :URL => 'https://bugs.freedesktop.org',
+          :User => 'account@example.com',
+          :Password => 'blahblahblah'
         },
-        "mzbz"=>{
-          :Name=>"Mozilla Bugzilla",
-          :URL=>"https://bugzilla.mozilla.org",
-          :User=>"account@example.com",
-          :Password=>"blahblahblah",
+        'mzbz' => {
+          :Name => 'Mozilla Bugzilla',
+          :URL => 'https://bugzilla.mozilla.org',
+          :User => 'account@example.com',
+          :Password => 'blahblahblah'
         },
-        "nvbz"=>{
-          :Name=>"Novell Bugzilla",
-          :URL=>"https://bugzilla.novell.com",
-          :User=>"account@example.com",
-          :Password=>"blahblahblah",
-          :ProductAliases=>{
-              'Security'=>'SUSE Security Incidents'
+        'nvbz' => {
+          :Name => 'Novell Bugzilla',
+          :URL => 'https://bugzilla.novell.com',
+          :User => 'account@example.com',
+          :Password => 'blahblahblah',
+          :ProductAliases => {
+            'Security' => 'SUSE Security Incidents'
           },
-          :Plugin=>"ruby-bugzilla/nvbugzilla.rb"
+          :Plugin => 'ruby-bugzilla/nvbugzilla.rb'
         }
       }
 
-      template.each do |k, v|
+      template.each do |_k, v|
         @plugin.run(:pre, v[:URL].sub(/\Ahttps?:\/\//, '').sub(/\/\Z/, ''), :setup, v)
       end
 
       fname = opts[:config].nil? ? @defaultyamlfile : opts[:config]
-      if File.exist?(fname) then
-        raise RuntimeError, ".bzconsole.yml already exists. please remove it first to proceed to the next step."
+      if File.exist?(fname)
+        raise ".bzconsole.yml already exists. please remove it first to proceed to the next step."
       end
-      File.open(fname, File::CREAT|File::WRONLY, 0600) do |f|
+      File.open(fname, File::CREAT | File::WRONLY, 0o600) do |f|
         f.write(template.to_yaml)
       end
       printf("%s has been created. please modify your account information before operating.\n", fname)
     end # def do
-
   end # class Setup
 
   class Login < CommandTemplate
-
     def initialize(plugin)
       super
       @n_args = 1
@@ -213,10 +207,10 @@ module BzConsole
 
     def parse(parser, argv, opts)
       opts[:output] = File.join(ENV['HOME'], '.ruby-bugzilla-cookie.yml')
-      parser.banner = sprintf("Usage: %s [global options] login [command options] <prefix> ...", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Command options:"
-      parser.on('-o', '--output=FILE', 'FILE to store the cookie') {|v| opts[:output] = v}
+      parser.banner = format('Usage: %s [global options] login [command options] <prefix> ...', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Command options:'
+      parser.on('-o', '--output=FILE', 'FILE to store the cookie') { |v| opts[:output] = v }
 
       super
     end # def parse
@@ -224,36 +218,32 @@ module BzConsole
     def do(argv, opts)
       conf = read_config(opts)
       conf.freeze
-      cconf = read_config({:config=>opts[:command][:output]})
+      cconf = read_config({ :config => opts[:command][:output] })
       argv.each do |prefix|
-        if prefix.nil? then
-          raise ArgumentError, "No prefix to log in"
-        end
-        unless conf.include?(prefix) then
-          raise RuntimeError, sprintf("No host information for %s", prefix)
+        raise ArgumentError, "No prefix to log in" if prefix.nil?
+        unless conf.include?(prefix)
+          raise RuntimeError, format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
-        login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-        pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+        login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+        pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
 
-        xmlrpc,host = get_xmlrpc(conf[prefix],opts)
+        xmlrpc, host = get_xmlrpc(conf[prefix], opts)
         user = Bugzilla::User.new(xmlrpc)
 
         begin
-          result = user.login({'login'=>login, 'password'=>pass, 'remember'=>true})
+          result = user.login({ 'login' => login, 'password' => pass, 'remember' => true })
           cconf[host] = xmlrpc.cookie
-          save_config({:config=>opts[:command][:output]}, cconf)
+          save_config({ :config => opts[:command][:output] }, cconf)
         rescue XMLRPC::FaultException => e
           printf("E: %s\n", e.message)
         end
       end
     end # def do
-
    end # class Login
 
   class Getbug < CommandTemplate
-
     def initialize(plugin)
       super
 
@@ -261,20 +251,20 @@ module BzConsole
     end # def initialize
 
     def parse(parser, argv, opts)
-      parser.banner = sprintf("Usage: %s [global options] getbug [command options] <prefix:bug number> ...", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Command options:"
-      parser.on('-s', '--summary', 'Displays bugs summary only') {opts[:summary] = true}
-      parser.on('-d', '--details', 'Displays detailed bugs information') {opts[:details] = true}
-      parser.on('-a', '--all', 'Displays the whole data in bugs') {opts[:all] = true}
-      parser.on('--anonymous', 'Access to Bugzilla anonymously') {opts[:anonymous] = true}
+      parser.banner = format('Usage: %s [global options] getbug [command options] <prefix:bug number> ...', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Command options:'
+      parser.on('-s', '--summary', 'Displays bugs summary only') { opts[:summary] = true }
+      parser.on('-d', '--details', 'Displays detailed bugs information') { opts[:details] = true }
+      parser.on('-a', '--all', 'Displays the whole data in bugs') { opts[:all] = true }
+      parser.on('--anonymous', 'Access to Bugzilla anonymously') { opts[:anonymous] = true }
 
       super
     end # def parse
 
     def do(argv, opts)
       real_do(argv, opts) do |result|
-        if opts[:command][:summary] == true then
+        if opts[:command][:summary] == true
           printf("Bug#%s, %s, %s[%s, %s] %s\n",
                  result['id'],
                  result['product'],
@@ -282,7 +272,7 @@ module BzConsole
                  result['status'],
                  result['severity'],
                  result['summary'])
-        elsif opts[:command][:details] == true then
+        elsif opts[:command][:details] == true
           printf("Bug#%s, %s, %s, %s[%s, %s, %s, %s] %s\n",
                  result['id'],
                  result['product'],
@@ -295,20 +285,20 @@ module BzConsole
                  result['summary'])
         else
           printf("Bug#%s - %s\n", result['id'], result['summary'])
-          printf("Status:\t\t%s%s\n", result['status'], !result['resolution'].empty? ? sprintf("[%s]", result['resolution']) : "")
+          printf("Status:\t\t%s%s\n", result['status'], !result['resolution'].empty? ? format('[%s]', result['resolution']) : '')
           printf("Product:\t%s\n", result['product'])
           printf("Version:\t%s\n", result['version'])
           printf("Component:\t%s\n", result['component'])
           printf("Assinged To:\t%s\n", result['assigned_to'])
           printf("Priority:\t%s\n", result['priority'])
           printf("Severity:\t%s\n", result['severity'])
-          result.keys.reject {|x| ['id','summary','status','resolution','product','version','component','assigned_to','priority','severity', 'comments'].include?(x)}.each do |x|
+          result.keys.reject { |x| ['id', 'summary', 'status', 'resolution', 'product', 'version', 'component', 'assigned_to', 'priority', 'severity', 'comments'].include?(x) }.each do |x|
             printf("%s:\t%s\n", x.capitalize, result[x].respond_to?(:to_time) ? result[x].to_time : result[x])
           end
           printf("Comments:\t%d\n\n", result['comments'].length)
           i = 0
           result['comments'].each do |c|
-            printf("Comment#%d%s %s  %s\n", i, c['is_private'] == true ? "[private]" : "", c['creator'], c['creation_time'].to_time)
+            printf("Comment#%d%s %s  %s\n", i, c['is_private'] == true ? '[private]' : '', c['creator'], c['creation_time'].to_time)
             printf("\n  %s\n\n", c['text'].split("\n").join("\n  "))
             i += 1
           end
@@ -323,26 +313,26 @@ module BzConsole
       conf.freeze
       argv.each do |bugn|
         bugn =~ /(.*):(.*)/
-        prefix = $1
-        nnn = $2
-        if prefix.nil? then
-          raise ArgumentError, sprintf("No prefix specified for Bug#%s", bugn)
+        prefix = Regexp.last_match(1)
+        nnn = Regexp.last_match(2)
+        if prefix.nil?
+          raise ArgumentError, format('No prefix specified for Bug#%s', bugn)
         end
-        unless conf.include?(prefix) then
-          raise RuntimeError, sprintf("No host information for %s", prefix)
+        unless conf.include?(prefix)
+          raise RuntimeError, format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
-        if opts[:command][:anonymous] == true then
+        if opts[:command][:anonymous] == true
           login = nil
           pass = nil
         else
-          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+          login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+          pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
         end
 
-        xmlrpc,host = get_xmlrpc(conf[prefix],opts) do |h|
-            @plugin.run(:pre, h, :getbug, opts)
+        xmlrpc, host = get_xmlrpc(conf[prefix], opts) do |h|
+          @plugin.run(:pre, h, :getbug, opts)
         end
 
         user = Bugzilla::User.new(xmlrpc)
@@ -350,13 +340,13 @@ module BzConsole
           bug = Bugzilla::Bug.new(xmlrpc)
 
           result = nil
-          if opts[:command][:summary] == true then
-            result = bug.get_bugs(nnn.split(','))
-          elsif opts[:command][:details] == true then
-            result = bug.get_bugs(nnn.split(','), ::Bugzilla::Bug::FIELDS_DETAILS)
+          result = if opts[:command][:summary] == true
+            bug.get_bugs(nnn.split(','))
+          elsif opts[:command][:details] == true
+            bug.get_bugs(nnn.split(','), ::Bugzilla::Bug::FIELDS_DETAILS)
           else
-            result = bug.get_bugs(nnn.split(','), nil)
-          end
+            bug.get_bugs(nnn.split(','), nil)
+                   end
 
           @plugin.run(:post, host, :getbug, result)
 
@@ -366,11 +356,9 @@ module BzConsole
         end
       end
     end # def real_do
-
   end # class Getbug
 
   class Search < CommandTemplate
-
     def initialize(plugin)
       super
 
@@ -379,31 +367,31 @@ module BzConsole
 
     def parse(parser, argv, opts)
       opts[:query] ||= {}
-      parser.banner = sprintf("Usage: %s [global options] search [command options] <prefix> ...", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Search options:"
-      parser.on('--alias=ALIASES', 'filter out the result by the alias') {|v| opts[:query][:alias] ||= []; opts[:query][:alias].push(*v.split(','))}
-      parser.on('-a', '--assignee=ASSIGNEES', 'filter out the result by the specific assignees') {|v| opts[:query][:assigned_to] ||= []; opts[:query][:assigned_to].push(*v.split(','))}
-      parser.on('--bug=BUGS', 'filter out the result by the specific bug number') {|v| opts[:query][:id] ||= []; opts[:query][:id].push(*v.split(','))}
-      parser.on('-c', '--component=COMPONENTS', 'filter out the result by the specific components') {|v| opts[:query][:component] ||= []; opts[:query][:component].push(*v.split(','))}
-      parser.on('--create-time=TIME', 'Searches for bugs that were created at this time or later') {|v| opts[:query][:creation_time] = Time.parse(v)}
-      parser.on('--creator=CREATER', 'filter out the result by the specific user who reported bugs') {|v| opts[:query][:creator] ||= []; opts[:query][:creator].push(*v.split(','))}
-      parser.on('--last-change-time=TIME', 'Searches for bugs that were modified at this time or later') {|v| opts[:query][:last_change_time] = Time.parse(v)}
-      parser.on('--op-sys=NAMES', 'filter out the result by the operating system') {|v| opts[:query][:op_sys] ||= []; opts[:query][:op_sys].push(*v.split(','))}
-      parser.on('--platform=PLATFORMS', 'filter out the result by the platform') {|v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(','))}
-      parser.on('--priority=PRIORITY', 'filter out the result by the priority') {|v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(','))}
-      parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') {|v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(','))}
-      parser.on('--resolution=RESOLUTIONS', 'filter out the result by the resolutions') {|v| opts[:query][:resolution] ||= []; opts[:query][:resolution].push(*v.split(','))}
-      parser.on('--severity=SEVERITY', 'filter out the result by the severity') {|v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(','))}
-      parser.on('-s', '--status=STATUSES', 'filter out the result by the status') {|v| opts[:query][:status] ||= []; opts[:query][:status].push(*v.split(','))}
-      parser.on('--summary=SUMMARY', 'filter out the result by the summary') {|v| opts[:query][:summary] ||= []; opts[:query][:summary] << v}
-      parser.on('--milestone=MILESTONE', 'filter out the result by the target milestone') {|v| opts[:query][:target_milestone] ||= []; opts[:query][:target_milestone].push(*v.split(','))}
-      parser.on('--whiteboard=STRING', 'filter out the result by the specific words in the status whiteboard') {|v| opts[:query][:whiteboard] ||= []; opts[:query][:whiteboard] << v}
-      parser.separator ""
-      parser.separator "Command options:"
-      parser.on('--short-list', 'Displays bugs summary only') {opts[:summary] = true}
-      parser.on('--detailed-list', 'Displays detailed bugs information') {opts[:details] = true}
-      parser.on('--anonymous', 'Access to Bugzilla anonymously') {opts[:anonymous] = true}
+      parser.banner = format('Usage: %s [global options] search [command options] <prefix> ...', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Search options:'
+      parser.on('--alias=ALIASES', 'filter out the result by the alias') { |v| opts[:query][:alias] ||= []; opts[:query][:alias].push(*v.split(',')) }
+      parser.on('-a', '--assignee=ASSIGNEES', 'filter out the result by the specific assignees') { |v| opts[:query][:assigned_to] ||= []; opts[:query][:assigned_to].push(*v.split(',')) }
+      parser.on('--bug=BUGS', 'filter out the result by the specific bug number') { |v| opts[:query][:id] ||= []; opts[:query][:id].push(*v.split(',')) }
+      parser.on('-c', '--component=COMPONENTS', 'filter out the result by the specific components') { |v| opts[:query][:component] ||= []; opts[:query][:component].push(*v.split(',')) }
+      parser.on('--create-time=TIME', 'Searches for bugs that were created at this time or later') { |v| opts[:query][:creation_time] = Time.parse(v) }
+      parser.on('--creator=CREATER', 'filter out the result by the specific user who reported bugs') { |v| opts[:query][:creator] ||= []; opts[:query][:creator].push(*v.split(',')) }
+      parser.on('--last-change-time=TIME', 'Searches for bugs that were modified at this time or later') { |v| opts[:query][:last_change_time] = Time.parse(v) }
+      parser.on('--op-sys=NAMES', 'filter out the result by the operating system') { |v| opts[:query][:op_sys] ||= []; opts[:query][:op_sys].push(*v.split(',')) }
+      parser.on('--platform=PLATFORMS', 'filter out the result by the platform') { |v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(',')) }
+      parser.on('--priority=PRIORITY', 'filter out the result by the priority') { |v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(',')) }
+      parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') { |v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(',')) }
+      parser.on('--resolution=RESOLUTIONS', 'filter out the result by the resolutions') { |v| opts[:query][:resolution] ||= []; opts[:query][:resolution].push(*v.split(',')) }
+      parser.on('--severity=SEVERITY', 'filter out the result by the severity') { |v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(',')) }
+      parser.on('-s', '--status=STATUSES', 'filter out the result by the status') { |v| opts[:query][:status] ||= []; opts[:query][:status].push(*v.split(',')) }
+      parser.on('--summary=SUMMARY', 'filter out the result by the summary') { |v| opts[:query][:summary] ||= []; opts[:query][:summary] << v }
+      parser.on('--milestone=MILESTONE', 'filter out the result by the target milestone') { |v| opts[:query][:target_milestone] ||= []; opts[:query][:target_milestone].push(*v.split(',')) }
+      parser.on('--whiteboard=STRING', 'filter out the result by the specific words in the status whiteboard') { |v| opts[:query][:whiteboard] ||= []; opts[:query][:whiteboard] << v }
+      parser.separator ''
+      parser.separator 'Command options:'
+      parser.on('--short-list', 'Displays bugs summary only') { opts[:summary] = true }
+      parser.on('--detailed-list', 'Displays detailed bugs information') { opts[:details] = true }
+      parser.on('--anonymous', 'Access to Bugzilla anonymously') { opts[:anonymous] = true }
 
       super
     end # def parse
@@ -411,7 +399,7 @@ module BzConsole
     def do(argv, opts)
       c = 0
       real_do(argv, opts) do |result|
-        if opts[:command][:summary] == true then
+        if opts[:command][:summary] == true
           printf("Bug#%s, %s, %s[%s, %s] %s\n",
                  result['id'] || result['bug_id'],
                  result['product'],
@@ -419,7 +407,7 @@ module BzConsole
                  result['status'],
                  result['severity'],
                  result['summary'])
-        elsif opts[:command][:details] == true then
+        elsif opts[:command][:details] == true
           printf("Bug#%s, %s, %s, %s[%s, %s, %s, %s] %s\n",
                  result['id'],
                  result['product'],
@@ -442,8 +430,8 @@ module BzConsole
       conf = read_config(opts)
       conf.freeze
       argv.each do |prefix|
-        unless conf.include?(prefix) then
-          raise RuntimeError, sprintf("No host information for %s", prefix)
+        unless conf.include?(prefix)
+          raise RuntimeError, format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -451,12 +439,12 @@ module BzConsole
         host = uri.host
         port = uri.port
         path = uri.path.empty? ? nil : uri.path
-        if opts[:command][:anonymous] == true then
+        if opts[:command][:anonymous] == true
           login = nil
           pass = nil
         else
-          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+          login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+          pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
         end
         proxy_host, proxy_port = get_proxy(info)
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
@@ -466,27 +454,26 @@ module BzConsole
         xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
-            bug = Bugzilla::Bug.new(xmlrpc)
-            opts[:command][:query][:product].map! { |x| info.include?(:ProductAliases) && 
-                                                info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x } if opts[:command][:query].include?(:product)
+          bug = Bugzilla::Bug.new(xmlrpc)
+            opts[:command][:query][:product].map! do |x| 
+              info.include?(:ProductAliases) &&
+              info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x end if opts[:command][:query].include?(:product)
 
             result = bug.search(opts[:command][:query])
 
             @plugin.run(:post, host, :search, result)
 
-            if result.include?('bugs') then
-                result['bugs'].each do |r|
-                    yield r
-                end
+            if result.include?('bugs')
+              result['bugs'].each do |r|
+                  yield r
+              end
             end
         end
       end
     end # def real_do
-
   end # class Search
 
   class Show < CommandTemplate
-
     def initialize(plugin)
       super
 
@@ -497,23 +484,23 @@ module BzConsole
       opts[:show] ||= {}
       opts[:show][:mode] = :component
       opts[:show][:field] = []
-      parser.banner = sprintf("Usage: %s [global options] show [command options] <prefix> ...", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Command options:"
-      parser.on('-f', '--field', 'Displays available field informations') {|v| opts[:show][:mode] = :field}
-      parser.on('--field-name=NAME', 'Displays NAME field information') {|v| opts[:show][:field] << v.split(',')}
-      parser.on('-p', '--product', 'Displays available product names') {|v| opts[:show][:mode] = :product}
-      parser.on('-c', '--component', 'Displays available component names (default)') {|v| opts[:show][:mode] = :component}
-      parser.on('--anonymous', 'Access to Bugzilla anonymously') {opts[:anonymous] = true}
+      parser.banner = format('Usage: %s [global options] show [command options] <prefix> ...', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Command options:'
+      parser.on('-f', '--field', 'Displays available field informations') { |_v| opts[:show][:mode] = :field }
+      parser.on('--field-name=NAME', 'Displays NAME field information') { |v| opts[:show][:field] << v.split(',') }
+      parser.on('-p', '--product', 'Displays available product names') { |_v| opts[:show][:mode] = :product }
+      parser.on('-c', '--component', 'Displays available component names (default)') { |_v| opts[:show][:mode] = :component }
+      parser.on('--anonymous', 'Access to Bugzilla anonymously') { opts[:anonymous] = true }
 
       super
     end # def parse
 
     def do(argv, opts)
       real_do(argv, opts) do |*result|
-        if opts[:command][:show][:mode] == :product then
+        if opts[:command][:show][:mode] == :product
           printf("%s\n", result[0])
-        elsif opts[:command][:show][:mode] == :component then
+        elsif opts[:command][:show][:mode] == :component
           printf("%s:\n", result[0])
           printf("  %s\n", result[1].join("\n  "))
         end
@@ -526,8 +513,8 @@ module BzConsole
       conf = read_config(opts)
       conf.freeze
       argv.each do |prefix|
-        unless conf.include?(prefix) then
-          raise RuntimeError, sprintf("No host information for %s", prefix)
+        unless conf.include?(prefix)
+          raise RuntimeError, format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
@@ -535,12 +522,12 @@ module BzConsole
         host = uri.host
         port = uri.port
         path = uri.path.empty? ? nil : uri.path
-        if opts[:command][:anonymous] == true then
+        if opts[:command][:anonymous] == true
           login = nil
           pass = nil
         else
-          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+          login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+          pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
         end
         proxy_host, proxy_port = get_proxy(info)
         timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
@@ -550,7 +537,7 @@ module BzConsole
         xmlrpc = Bugzilla::XMLRPC.new(host, port, path, proxy_host, proxy_port, timeout, uri.user, uri.password)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
-          if opts[:command][:show][:mode] == :field then
+          if opts[:command][:show][:mode] == :field
             bug = Bugzilla::Bug.new(xmlrpc)
 
             result = bug.fields(opts[:command][:show][:field].flatten)
@@ -566,9 +553,9 @@ module BzConsole
 
             products = result.keys.sort
             products.each do |p|
-              if opts[:command][:show][:mode] == :product then
+              if opts[:command][:show][:mode] == :product
                 yield p
-              elsif opts[:command][:show][:mode] == :component then
+              elsif opts[:command][:show][:mode] == :component
                 yield p, result[p][0].sort
               end
             end
@@ -576,11 +563,9 @@ module BzConsole
         end
       end
     end # def real_do
-
   end # class Show
 
   class Metrics < CommandTemplate
-
     def initialize(plugin)
       super
 
@@ -593,58 +578,58 @@ module BzConsole
       opts[:metrics][:output] = 'bz-metrics.png'
       opts[:metrics][:x_coordinate] = :monthly
 
-      parser.banner = sprintf("Usage: %s [global options] metrics [command options] <prefix> ...", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Search options:"
-      parser.on('--alias=ALIASES', 'filter out the result by the alias') {|v| opts[:query][:alias] ||= []; opts[:query][:alias].push(*v.split(','))}
-      parser.on('-a', '--assignee=ASSIGNEES', 'filter out the result by the specific assignees') {|v| opts[:query][:assigned_to] ||= []; opts[:query][:assigned_to].push(*v.split(','))}
-      parser.on('--bug=BUGS', 'filter out the result by the specific bug number') {|v| opts[:query][:id] ||= []; opts[:query][:id].push(*v.split(','))}
-      parser.on('-c', '--component=COMPONENTS', 'filter out the result by the specific components') {|v| opts[:query][:component] ||= []; opts[:query][:component].push(*v.split(','))}
-      parser.on('--creator=CREATER', 'filter out the result by the specific user who reported bugs') {|v| opts[:query][:creator] ||= []; opts[:query][:creator].push(*v.split(','))}
-      parser.on('--op-sys=NAMES', 'filter out the result by the operating system') {|v| opts[:query][:op_sys] ||= []; opts[:query][:op_sys].push(*v.split(','))}
-      parser.on('--platform=PLATFORMS', 'filter out the result by the platform') {|v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(','))}
-      parser.on('--priority=PRIORITY', 'filter out the result by the priority') {|v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(','))}
-      parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') {|v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(','))}
-      parser.on('--resolution=RESOLUSIONS', 'filter out the result by the resolusions') {|v| opts[:query][:resolution] ||= []; opts[:query][:resolusion].push(*v.split(','))}
-      parser.on('--severity=SEVERITY', 'filter out the result by the severity') {|v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(','))}
-      parser.on('--summary=SUMMARY', 'filter out the result by the summary') {|v| opts[:query][:summary] ||= []; opts[:query][:summary] << v}
-      parser.on('--milestone=MILESTONE', 'filter out the result by the target milestone') {|v| opts[:query][:target_milestone] ||= []; opts[:query][:target_milestone].push(*v.split(','))}
-      parser.on('--whiteboard=STRING', 'filter out the result by the specific words in the status whiteboard') {|v| opts[:query][:whiteboard] ||= []; opts[:query][:whiteboard] << v}
-      parser.separator ""
-      parser.separator "Command options:"
-      parser.on('-t', '--title=TITLE', 'add TITLE to the graph') {|v| opts[:metrics][:title] = v}
-      parser.on('--begin-date=DATE', 'generate the graph since the beginning of month of DATE.') {|v| x = Time.parse(v); opts[:metrics][:begin_date] = Time.utc(x.year, x.month, 1, 0, 0, 0)}
-      parser.on('--end-date=DATE', 'generate the graph until the end of month of DATE.') {|v| x = Time.parse(v); opts[:metrics][:end_date] = Time.utc(x.year, x.month + 1, 1, 0, 0, 0) - 1}
-      parser.on('-o', '--output=FILE', 'generate the graph to FILE') {|v| opts[:metrics][:output] = v}
-      parser.on('--anonymous', 'access to Bugzilla anonymously') {|v| opts[:anonymous] = true}
-      parser.on('--weekly', 'genereate the graph with weekly X-coordinate') {|v| opts[:metrics][:x_coordinate] = :weekly}
-      parser.on('--monthly', 'genereate the graph with monthly X-coordinate (default)') {|v| opts[:metrics][:x_coordinate] = :monthly}
+      parser.banner = format('Usage: %s [global options] metrics [command options] <prefix> ...', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Search options:'
+      parser.on('--alias=ALIASES', 'filter out the result by the alias') { |v| opts[:query][:alias] ||= []; opts[:query][:alias].push(*v.split(',')) }
+      parser.on('-a', '--assignee=ASSIGNEES', 'filter out the result by the specific assignees') { |v| opts[:query][:assigned_to] ||= []; opts[:query][:assigned_to].push(*v.split(',')) }
+      parser.on('--bug=BUGS', 'filter out the result by the specific bug number') { |v| opts[:query][:id] ||= []; opts[:query][:id].push(*v.split(',')) }
+      parser.on('-c', '--component=COMPONENTS', 'filter out the result by the specific components') { |v| opts[:query][:component] ||= []; opts[:query][:component].push(*v.split(',')) }
+      parser.on('--creator=CREATER', 'filter out the result by the specific user who reported bugs') { |v| opts[:query][:creator] ||= []; opts[:query][:creator].push(*v.split(',')) }
+      parser.on('--op-sys=NAMES', 'filter out the result by the operating system') { |v| opts[:query][:op_sys] ||= []; opts[:query][:op_sys].push(*v.split(',')) }
+      parser.on('--platform=PLATFORMS', 'filter out the result by the platform') { |v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(',')) }
+      parser.on('--priority=PRIORITY', 'filter out the result by the priority') { |v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(',')) }
+      parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') { |v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(',')) }
+      parser.on('--resolution=RESOLUSIONS', 'filter out the result by the resolusions') { |v| opts[:query][:resolution] ||= []; opts[:query][:resolusion].push(*v.split(',')) }
+      parser.on('--severity=SEVERITY', 'filter out the result by the severity') { |v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(',')) }
+      parser.on('--summary=SUMMARY', 'filter out the result by the summary') { |v| opts[:query][:summary] ||= []; opts[:query][:summary] << v }
+      parser.on('--milestone=MILESTONE', 'filter out the result by the target milestone') { |v| opts[:query][:target_milestone] ||= []; opts[:query][:target_milestone].push(*v.split(',')) }
+      parser.on('--whiteboard=STRING', 'filter out the result by the specific words in the status whiteboard') { |v| opts[:query][:whiteboard] ||= []; opts[:query][:whiteboard] << v }
+      parser.separator ''
+      parser.separator 'Command options:'
+      parser.on('-t', '--title=TITLE', 'add TITLE to the graph') { |v| opts[:metrics][:title] = v }
+      parser.on('--begin-date=DATE', 'generate the graph since the beginning of month of DATE.') { |v| x = Time.parse(v); opts[:metrics][:begin_date] = Time.utc(x.year, x.month, 1, 0, 0, 0) }
+      parser.on('--end-date=DATE', 'generate the graph until the end of month of DATE.') { |v| x = Time.parse(v); opts[:metrics][:end_date] = Time.utc(x.year, x.month + 1, 1, 0, 0, 0) - 1 }
+      parser.on('-o', '--output=FILE', 'generate the graph to FILE') { |v| opts[:metrics][:output] = v }
+      parser.on('--anonymous', 'access to Bugzilla anonymously') { |_v| opts[:anonymous] = true }
+      parser.on('--weekly', 'genereate the graph with weekly X-coordinate') { |_v| opts[:metrics][:x_coordinate] = :weekly }
+      parser.on('--monthly', 'genereate the graph with monthly X-coordinate (default)') { |_v| opts[:metrics][:x_coordinate] = :monthly }
 
       super
     end # def parse
 
     def do(argv, opts)
       data = {
-        :label=>[],
-        'NEW'=>[],
-        'ASSIGNED'=>[],
-        'MODIFIED'=>[],
-        'ON_QA'=>[],
-        'CLOSED'=>[],
-        'OPEN'=>[]
+        :label => [],
+        'NEW' => [],
+        'ASSIGNED' => [],
+        'MODIFIED' => [],
+        'ON_QA' => [],
+        'CLOSED' => [],
+        'OPEN' => []
       }
       last_label = nil
       real_do(argv, opts) do |t, new, assigned, modified, on_qa, closed, open|
         printf("%s, new: %d, assigned: %d, modified %d, on_qa %d, closed %d / open %d\n",
-               opts[:command][:metrics][:x_coordinate] == :weekly ? sprintf("week %d", Date.new(t.year, t.month, t.day).cweek) : t.strftime("%Y-%m"), new, assigned, modified, on_qa, closed, open)
+               opts[:command][:metrics][:x_coordinate] == :weekly ? format('week %d', Date.new(t.year, t.month, t.day).cweek) : t.strftime('%Y-%m'), new, assigned, modified, on_qa, closed, open)
         data['NEW'] << new
         data['ASSIGNED'] << assigned
         data['MODIFIED'] << modified
         data['ON_QA'] << on_qa
         data['CLOSED'] << closed
         data['OPEN'] << open
-        label = t.strftime("%Y/%m")
-        if last_label != label then
+        label = t.strftime('%Y/%m')
+        if last_label != label
           data[:label] << label
           last_label = label
         else
@@ -656,7 +641,7 @@ module BzConsole
       data.delete(:label)
       def timeline.to_hash
         ret = {}
-        (0..self.length-1).each do |i|
+        (0..length - 1).each do |i|
           ret[i] = self[i] unless self[i].nil?
         end
         ret
@@ -664,30 +649,30 @@ module BzConsole
 
       # output the trend graph
       g = Gruff::Line.new
-      g.title = sprintf("Trend: %s", opts[:command][:metrics][:title])
+      g.title = format('Trend: %s', opts[:command][:metrics][:title])
       g.labels = timeline.to_hash
       data.each do |k, v|
         next unless k == 'NEW' || k == 'OPEN' || k == 'CLOSED'
         g.data(k, v)
       end
-      g.write(sprintf("trend-%s", opts[:command][:metrics][:output]))
+      g.write(format('trend-%s', opts[:command][:metrics][:output]))
 
       # output the activity graph
       g = Gruff::StackedBar.new
-      g.title = sprintf("Activity: %s", opts[:command][:metrics][:title])
+      g.title = format('Activity: %s', opts[:command][:metrics][:title])
       g.labels = timeline.to_hash
       g.data('Resolved', data['CLOSED'])
       x = []
-      (0..data['ASSIGNED'].length-1).each do |i|
+      (0..data['ASSIGNED'].length - 1).each do |i|
         x[i] = data['ASSIGNED'][i] + data['MODIFIED'][i] + data['ON_QA'][i]
       end
       g.data('Unresolved', x)
       a = []
-      (0..data['OPEN'].length-1).each do |i|
+      (0..data['OPEN'].length - 1).each do |i|
         a[i] = data['OPEN'][i] - x[i]
       end
       g.data('non-activity bugs', a)
-      g.write(sprintf("activity-%s", opts[:command][:metrics][:output]))
+      g.write(format('activity-%s', opts[:command][:metrics][:output]))
     end # def do
 
     private
@@ -696,30 +681,29 @@ module BzConsole
       conf = read_config(opts)
       conf.freeze
       argv.each do |prefix|
-        unless conf.include?(prefix) then
-          raise RuntimeError, sprintf("No host information for %s", prefix)
+        unless conf.include?(prefix)
+          raise RuntimeError, format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
-        if opts[:command][:anonymous] == true then
+        if opts[:command][:anonymous] == true
           login = nil
           pass = nil
         else
-          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+          login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+          pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
         end
 
-
-        xmlrpc,host = get_xmlrpc(conf[prefix],opts)
+        xmlrpc, host = get_xmlrpc(conf[prefix], opts)
         user = Bugzilla::User.new(xmlrpc)
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
 
-          opts[:command][:query][:product].map! {|x| info.include?(:ProductAliases) && info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x} if opts[:command][:query].include?(:product)
+          opts[:command][:query][:product].map! { |x| info.include?(:ProductAliases) && info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x } if opts[:command][:query].include?(:product)
 
           ts = opts[:command][:metrics][:begin_date] || Time.utc(Time.new.year, 1, 1)
-          te = opts[:command][:metrics][:end_date] || Time.utc(Time.new.year+1, 1, 1) - 1
-          if opts[:command][:metrics][:x_coordinate] == :weekly then
+          te = opts[:command][:metrics][:end_date] || Time.utc(Time.new.year + 1, 1, 1) - 1
+          if opts[:command][:metrics][:x_coordinate] == :weekly
             # align to the week
             d = Date.new(ts.year, ts.month, ts.day)
             ds = Date.commercial(d.year, d.cweek, 1)
@@ -733,14 +717,14 @@ module BzConsole
 
           @plugin.run(:pre, host, :metrics, searchopts, opts[:metrics])
 
-          raise NoMethodError, "No method to deal with the query" if searchopts == opts[:command][:query]
+          raise NoMethodError, 'No method to deal with the query' if searchopts == opts[:command][:query]
 
-          while ts < te do
-              searchopts = opts[:command][:query].clone
+          while ts < te
+            searchopts = opts[:command][:query].clone
 
               # don't rely on the status to deal with NEW bugs.
               # unable to estimate the case bugs closed quickly
-              if opts[:command][:metrics][:x_coordinate] == :weekly then
+              if opts[:command][:metrics][:x_coordinate] == :weekly
                 d = Date.new(ts.year, ts.month, ts.day)
                 de = Date.commercial(d.year, d.cweek, 7)
                 drange = [ts, Time.utc(de.year, de.month, de.day, 23, 59, 59)]
@@ -770,9 +754,9 @@ module BzConsole
 
               @plugin.run(:post, host, :search, result)
 
-              assigned = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'ASSIGNED' ? x : nil}.compact.length : 0
-              modified = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'MODIFIED' ? x : nil}.compact.length : 0
-              on_qa = result.include?('bugs') ? result['bugs'].map{|x| x['status'] == 'ON_QA' ? x : nil}.compact.length : 0
+              assigned = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'ASSIGNED' ? x : nil }.compact.length : 0
+              modified = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'MODIFIED' ? x : nil }.compact.length : 0
+              on_qa = result.include?('bugs') ? result['bugs'].map { |x| x['status'] == 'ON_QA' ? x : nil }.compact.length : 0
 
               # send a separate query for closed.
               # just counting CLOSED the above is meaningless.
@@ -818,14 +802,13 @@ module BzConsole
               yield ts, new, assigned, modified, on_qa, closed, open_bugs
 
               ts = drange[1] + 1
-          end #while
+          end # while
         end
       end
     end # def real_do
   end # class Metrics
 
   class Newbug < CommandTemplate
-
     def initialize(plugin)
       super
 
@@ -835,33 +818,33 @@ module BzConsole
     def parse(parser, argv, opts)
       opts[:newbug] = {}
 
-      parser.banner = sprintf("Usage: %s [global options] newbug [command options] <prefix>", File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Options:"
-      parser.on('-p', '--product=PRODUCT', 'The name of the product the bug is being filed against') {|v| opts[:newbug][:product] = v}
-      parser.on('-c', '--component=COMPONENT', 'The name of the component in PRODUCT') {|v| opts[:newbug][:component] = v}
-      parser.on('-s', '--summary=SUMMARY', 'A brief description of the bug being filed') {|v| opts[:newbug][:summary] = v}
-      parser.on('-v', '--version=VERSION', 'A version of PRODUCT that the bug was found in') {|v| opts[:newbug][:version] = v}
-      parser.on('-d', '--description=DESCRIPTION', 'The initial description for bug') {|v| opts[:newbug][:description] = v}
-      parser.on('--opsys=OPSYS', 'The operating system the bug was discovered on') {|v| opts[:newbug][:op_sys] = v}
-      parser.on('--platform=PLATFORM', 'What type of hardware the bug was experienced on') {|v| opts[:newbug][:platform] = v}
-      parser.on('--priority=PRIORITY', 'What order the bug will be fixed in by the developer') {|v| opts[:newbug][:priority] = v}
-      parser.on('--severity=SEVERITY', 'How severe the bug is') {|v| opts[:newbug][:severity] = v}
-      parser.on('--alias=ALIAS', 'A brief alias for the bug that can be used instead of a bug number') {|v| opts[:newbug][:alias] = v}
-      parser.on('--assigned_to=ASSGINEE', 'A user to assign the bug to') {|v| opts[:newbug][:assigned_to] = v}
-      parser.on('--comment_is_private', 'Make the description to private') {|v| opts[:newbug][:comment_is_private] = true}
-      parser.on('--groups=GROUPS', 'The list of group names to put this bug into') {|v| opts[:newbug][:groups] = v.split(/,/)}
-      parser.on('--qacontact=USER', 'The QA concact to assign the bug to') {|v| opts[:newbug][:qa_contact] = v}
-      parser.on('--status=STATUS', 'The status that the bug should start out as') {|v| opts[:newbug][:status] = v}
-      parser.on('--resolution=RESOLUTION', 'Set the resolution if filing a closed bug') {|v| opts[:newbug][:resolution] = v}
-      parser.on('--targetmilestone=MILESTONE', 'A valid target milestone for PRODUCT') {|v| opts[:newbug][:target_milestone] = v}
+      parser.banner = format('Usage: %s [global options] newbug [command options] <prefix>', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Options:'
+      parser.on('-p', '--product=PRODUCT', 'The name of the product the bug is being filed against') { |v| opts[:newbug][:product] = v }
+      parser.on('-c', '--component=COMPONENT', 'The name of the component in PRODUCT') { |v| opts[:newbug][:component] = v }
+      parser.on('-s', '--summary=SUMMARY', 'A brief description of the bug being filed') { |v| opts[:newbug][:summary] = v }
+      parser.on('-v', '--version=VERSION', 'A version of PRODUCT that the bug was found in') { |v| opts[:newbug][:version] = v }
+      parser.on('-d', '--description=DESCRIPTION', 'The initial description for bug') { |v| opts[:newbug][:description] = v }
+      parser.on('--opsys=OPSYS', 'The operating system the bug was discovered on') { |v| opts[:newbug][:op_sys] = v }
+      parser.on('--platform=PLATFORM', 'What type of hardware the bug was experienced on') { |v| opts[:newbug][:platform] = v }
+      parser.on('--priority=PRIORITY', 'What order the bug will be fixed in by the developer') { |v| opts[:newbug][:priority] = v }
+      parser.on('--severity=SEVERITY', 'How severe the bug is') { |v| opts[:newbug][:severity] = v }
+      parser.on('--alias=ALIAS', 'A brief alias for the bug that can be used instead of a bug number') { |v| opts[:newbug][:alias] = v }
+      parser.on('--assigned_to=ASSGINEE', 'A user to assign the bug to') { |v| opts[:newbug][:assigned_to] = v }
+      parser.on('--comment_is_private', 'Make the description to private') { |_v| opts[:newbug][:comment_is_private] = true }
+      parser.on('--groups=GROUPS', 'The list of group names to put this bug into') { |v| opts[:newbug][:groups] = v.split(/,/) }
+      parser.on('--qacontact=USER', 'The QA concact to assign the bug to') { |v| opts[:newbug][:qa_contact] = v }
+      parser.on('--status=STATUS', 'The status that the bug should start out as') { |v| opts[:newbug][:status] = v }
+      parser.on('--resolution=RESOLUTION', 'Set the resolution if filing a closed bug') { |v| opts[:newbug][:resolution] = v }
+      parser.on('--targetmilestone=MILESTONE', 'A valid target milestone for PRODUCT') { |v| opts[:newbug][:target_milestone] = v }
 
       super
     end # def parse
 
     def do(argv, opts)
       real_do(argv, opts) do |res|
-        if res.include?('id') then
+        if res.include?('id')
           printf("A bug has been filed as Bug#%s\n", res['id'])
         else
           p res
@@ -876,8 +859,8 @@ module BzConsole
       conf.freeze
       # not supporting filing a bug to multiple bugzilla
       prefix = argv[0]
-      unless conf.include?(prefix) then
-        raise RuntimeError, sprintf("No host information for %s", prefix)
+      unless conf.include?(prefix)
+        raise RuntimeError, format('No host information for %s', prefix)
       end
 
       info = conf[prefix]
@@ -885,8 +868,8 @@ module BzConsole
       host = uri.host
       port = uri.port
       path = uri.path.empty? ? nil : uri.path
-      login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-      pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+      login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+      pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
       proxy_host, proxy_port = get_proxy(info)
       timeout = opts[:timeout].nil? ? 60 : opts[:timeout]
 
@@ -904,11 +887,9 @@ module BzConsole
         yield result
       end
     end # def real_do
-
   end # class Newbug
 
   class Responsetime < CommandTemplate
-
     def initialize(plugin)
       super
       @n_args = 1
@@ -917,34 +898,34 @@ module BzConsole
     def parse(parser, argv, opts)
       opts[:responsetime] = {}
       opts[:query] = {}
-      parser.banner = sprintf("Usage: %s [global options] responsetime [command options] <prefix:bug number>...",  File.basename(__FILE__))
-      parser.separator ""
-      parser.separator "Search options:"
-      parser.on('--alias=ALIASES', 'filter out the result by the alias') {|v| opts[:query][:alias] ||= []; opts[:query][:alias].push(*v.split(','))}
-      parser.on('-a', '--assignee=ASSIGNEES', 'filter out the result by the specific assignees') {|v| opts[:query][:assigned_to] ||= []; opts[:query][:assigned_to].push(*v.split(','))}
-      parser.on('--bug=BUGS', 'filter out the result by the specific bug number') {|v| opts[:query][:id] ||= []; opts[:query][:id].push(*v.split(','))}
-      parser.on('-c', '--component=COMPONENTS', 'filter out the result by the specific components') {|v| opts[:query][:component] ||= []; opts[:query][:component].push(*v.split(','))}
-      parser.on('--creator=CREATER', 'filter out the result by the specific user who reported bugs') {|v| opts[:query][:creator] ||= []; opts[:query][:creator].push(*v.split(','))}
-      parser.on('--op-sys=NAMES', 'filter out the result by the operating system') {|v| opts[:query][:op_sys] ||= []; opts[:query][:op_sys].push(*v.split(','))}
-      parser.on('--platform=PLATFORMS', 'filter out the result by the platform') {|v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(','))}
-      parser.on('--priority=PRIORITY', 'filter out the result by the priority') {|v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(','))}
-      parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') {|v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(','))}
-      parser.on('--resolution=RESOLUSIONS', 'filter out the result by the resolusions') {|v| opts[:query][:resolution] ||= []; opts[:query][:resolusion].push(*v.split(','))}
-      parser.on('--severity=SEVERITY', 'filter out the result by the severity') {|v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(','))}
-      parser.on('--summary=SUMMARY', 'filter out the result by the summary') {|v| opts[:query][:summary] ||= []; opts[:query][:summary] << v}
-      parser.on('--milestone=MILESTONE', 'filter out the result by the target milestone') {|v| opts[:query][:target_milestone] ||= []; opts[:query][:target_milestone].push(*v.split(','))}
-      parser.on('--whiteboard=STRING', 'filter out the result by the specific words in the status whiteboard') {|v| opts[:query][:whiteboard] ||= []; opts[:query][:whiteboard] << v}
-      parser.separator ""
-      parser.separator "Command Options:"
-      parser.on('--begin-date=DATE', 'Analyse the response time since DATE') {|v| x = Time.parse(v); opts[:responsetime][:begin_date] = Time.utc(x.year, x.month, x.day, 0, 0, 0)}
-      parser.on('--end-date=DATE', 'Analyse the response time until DATE') {|v| x = Time.parse(v); opts[:responsetime][:end_date] = Time.utc(x.year, x.month, x.day, 23, 59, 59)}
-      parser.on('--anonymous','access to Bugzilla anonymously') {|v| opts[:anonymous] = true}
+      parser.banner = format('Usage: %s [global options] responsetime [command options] <prefix:bug number>...', File.basename(__FILE__))
+      parser.separator ''
+      parser.separator 'Search options:'
+      parser.on('--alias=ALIASES', 'filter out the result by the alias') { |v| opts[:query][:alias] ||= []; opts[:query][:alias].push(*v.split(',')) }
+      parser.on('-a', '--assignee=ASSIGNEES', 'filter out the result by the specific assignees') { |v| opts[:query][:assigned_to] ||= []; opts[:query][:assigned_to].push(*v.split(',')) }
+      parser.on('--bug=BUGS', 'filter out the result by the specific bug number') { |v| opts[:query][:id] ||= []; opts[:query][:id].push(*v.split(',')) }
+      parser.on('-c', '--component=COMPONENTS', 'filter out the result by the specific components') { |v| opts[:query][:component] ||= []; opts[:query][:component].push(*v.split(',')) }
+      parser.on('--creator=CREATER', 'filter out the result by the specific user who reported bugs') { |v| opts[:query][:creator] ||= []; opts[:query][:creator].push(*v.split(',')) }
+      parser.on('--op-sys=NAMES', 'filter out the result by the operating system') { |v| opts[:query][:op_sys] ||= []; opts[:query][:op_sys].push(*v.split(',')) }
+      parser.on('--platform=PLATFORMS', 'filter out the result by the platform') { |v| opts[:query][:platform] ||= []; opts[:query][:platform].push(*v.split(',')) }
+      parser.on('--priority=PRIORITY', 'filter out the result by the priority') { |v| opts[:query][:priority] ||= []; opts[:query][:priority].push(*v.split(',')) }
+      parser.on('-p', '--product=PRODUCTS', 'filter out the result by the specific products') { |v| opts[:query][:product] ||= []; opts[:query][:product].push(*v.split(',')) }
+      parser.on('--resolution=RESOLUSIONS', 'filter out the result by the resolusions') { |v| opts[:query][:resolution] ||= []; opts[:query][:resolusion].push(*v.split(',')) }
+      parser.on('--severity=SEVERITY', 'filter out the result by the severity') { |v| opts[:query][:severity] ||= []; opts[:query][:severity].push(*v.split(',')) }
+      parser.on('--summary=SUMMARY', 'filter out the result by the summary') { |v| opts[:query][:summary] ||= []; opts[:query][:summary] << v }
+      parser.on('--milestone=MILESTONE', 'filter out the result by the target milestone') { |v| opts[:query][:target_milestone] ||= []; opts[:query][:target_milestone].push(*v.split(',')) }
+      parser.on('--whiteboard=STRING', 'filter out the result by the specific words in the status whiteboard') { |v| opts[:query][:whiteboard] ||= []; opts[:query][:whiteboard] << v }
+      parser.separator ''
+      parser.separator 'Command Options:'
+      parser.on('--begin-date=DATE', 'Analyse the response time since DATE') { |v| x = Time.parse(v); opts[:responsetime][:begin_date] = Time.utc(x.year, x.month, x.day, 0, 0, 0) }
+      parser.on('--end-date=DATE', 'Analyse the response time until DATE') { |v| x = Time.parse(v); opts[:responsetime][:end_date] = Time.utc(x.year, x.month, x.day, 23, 59, 59) }
+      parser.on('--anonymous', 'access to Bugzilla anonymously') { |_v| opts[:anonymous] = true }
 
       super
     end # def parse
 
     def do(argv, opts)
-      real_do(argv, opts) do |ts, te, login, user, bug|
+      real_do(argv, opts) do |_ts, te, login, user, bug|
         printf("Bug#%s: [%s] - [%s] [%s] %s - %d comments\n", bug['id'], bug['product'], bug['component'], bug['status'], bug['summary'], bug['comments'].length)
 
         ucache = {}
@@ -953,40 +934,38 @@ module BzConsole
         notyetrespond = false
         ncomment = 0
         n = 0
-        over = ""
+        over = ''
         bug['comments'].each do |comment|
           u = nil
-          if ucache.include?(comment['creator']) then
+          if ucache.include?(comment['creator'])
             u = ucache[comment['creator']]
           else
             u = user.get_userinfo(comment['creator'])
-            u = u[0] #FIXME
+            u = u[0] # FIXME
             ucache[comment['creator']] = u
           end
-          printf("    #%d. On %s, %s wrote\n", comment['count'], comment['creation_time'].to_time, comment['creator'].include?('@') ? sprintf("%s <%s>", u['real_name'], comment['creator']) : comment['creator'])
-          if comment['creator'] != login then
-            if !notyetrespond then
+          printf("    #%d. On %s, %s wrote\n", comment['count'], comment['creation_time'].to_time, comment['creator'].include?('@') ? format('%s <%s>', u['real_name'], comment['creator']) : comment['creator'])
+          if comment['creator'] != login
+            unless notyetrespond
               st = comment['creation_time'].to_time
               notyetrespond = true
             end
           else
             ncomment += 1
             et = comment['creation_time'].to_time
-            if !st.nil? then
-              total += (et - st)
-            end
+            total += (et - st) if !st.nil?
             st = et
             notyetrespond = false
           end
           n += 1
         end
         x = ncomment
-        if notyetrespond && bug['bug_status'] != 'CLOSED' then
+        if notyetrespond && bug['bug_status'] != 'CLOSED'
           total += (te - st)
           over = '>'
           x = 1 if x == 0
         end
-        printf("  Own comment#: %d - avg. response time: %s%.f days\n", ncomment, over, total.to_f / x / 86400.0)
+        printf("  Own comment#: %d - avg. response time: %s%.f days\n", ncomment, over, total.to_f / x / 86_400.0)
       end
     end # def do
 
@@ -994,17 +973,17 @@ module BzConsole
       conf = read_config(opts)
       conf.freeze
       argv.each do |prefix|
-        unless conf.include?(prefix) then
-          raise RuntimeError, sprintf("No host information for %s", prefix)
+        unless conf.include?(prefix)
+          raise RuntimeError, format('No host information for %s', prefix)
         end
 
         info = conf[prefix]
-        if opts[:command][:anonymous] == true then
+        if opts[:command][:anonymous] == true
           login = nil
           pass = nil
         else
-          login = info[:User].nil? ? ask("Bugzilla ID: ") : info[:User]
-          pass = info[:Password].nil? ? ask("Bugzilla password: ") {|q| q.echo = false} : info[:Password]
+          login = info[:User].nil? ? ask('Bugzilla ID: ') : info[:User]
+          pass = info[:Password].nil? ? ask('Bugzilla password: ') { |q| q.echo = false } : info[:Password]
         end
 
         xmlrpc, host = get_xmlrpc(conf[prefix], opts)
@@ -1012,9 +991,9 @@ module BzConsole
         user.session(login, pass) do
           bug = Bugzilla::Bug.new(xmlrpc)
 
-          opts[:command][:query][:product].map! {|x| info.include?(:ProductAliases) && info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x} if opts[:command][:query].include?(:product)
+          opts[:command][:query][:product].map! { |x| info.include?(:ProductAliases) && info[:ProductAliases].include?(x) ? info[:ProductAliases][x] : x } if opts[:command][:query].include?(:product)
           ts = opts[:command][:responsetime][:begin_date] || Time.utc(Time.new.year, 1, 1)
-          te = opts[:command][:responsetime][:end_date] || Time.utc(Time.new.year+1, 1, 1) - 1
+          te = opts[:command][:responsetime][:end_date] || Time.utc(Time.new.year + 1, 1, 1) - 1
           searchopts = opts[:command][:query].clone
           searchopts[:last_change_time] = [ts, te]
 
@@ -1024,8 +1003,8 @@ module BzConsole
 
           @plugin.run(:post, host, :search, result)
 
-          if result.include?('bugs') then
-            ids = result['bugs'].map {|x| x['id']}
+          if result.include?('bugs')
+            ids = result['bugs'].map { |x| x['id'] }
             res = bug.get_bugs(ids, nil)
             res.each do |r|
               yield ts, te, login, user, r
@@ -1035,9 +1014,7 @@ module BzConsole
       end
     end # def real_do
 
-
-  end # class 
-
+  end # class
 end # module BzConsole
 
 begin
@@ -1046,22 +1023,22 @@ begin
   subargv = []
 
   o = ARGV.options do |opt|
-    opt.banner = sprintf("Usage: %s [global options] <command> ...", File.basename(__FILE__))
-    opt.separator ""
-    opt.separator "Global options:"
-    opt.on('-c', '--config=FILE', 'read FILE as the configuration file.') {|v| opts[:config] = v}
-    opt.on('-t', '--timeout=SEC', 'Set XMLRPC timeout in a second.') {|v| opts[:timeout] = v.to_i}
-    opt.on('-h', '--help', 'show this message') {|x| opts[:help] = true}
+    opt.banner = format('Usage: %s [global options] <command> ...', File.basename(__FILE__))
+    opt.separator ''
+    opt.separator 'Global options:'
+    opt.on('-c', '--config=FILE', 'read FILE as the configuration file.') { |v| opts[:config] = v }
+    opt.on('-t', '--timeout=SEC', 'Set XMLRPC timeout in a second.') { |v| opts[:timeout] = v.to_i }
+    opt.on('-h', '--help', 'show this message') { |_x| opts[:help] = true }
 
-    cmds = BzConsole.constants.sort.map {|x| (k = eval("BzConsole::#{x}")).class == Class && x != :CommandTemplate ? x.downcase.to_sym : nil}.compact
+    cmds = BzConsole.constants.sort.map { |x| (k = eval("BzConsole::#{x}")).class == Class && x != :CommandTemplate ? x.downcase.to_sym : nil }.compact
 
-    subargv = opt.order(ARGV);
+    subargv = opt.order(ARGV)
 
     command = subargv[0]
 
-    if subargv.length > 0 then
+    if !subargv.empty?
       n = cmds.index(command.to_sym)
-      unless n.nil? then
+      unless n.nil?
         opts[:instance] = eval("BzConsole::#{cmds[n].to_s.capitalize}.new(Bugzilla::Plugin::Template.new)")
         subargv = opts[:instance].parse(opt, subargv[1..-1], opts[:command])
       else
@@ -1070,14 +1047,14 @@ begin
         exit 1
       end
     else
-      opt.separator ""
-      opt.separator "Available commands:"
-      opt.separator sprintf("  %s", cmds.join(' '))
+      opt.separator ''
+      opt.separator 'Available commands:'
+      opt.separator format('  %s', cmds.join(' '))
     end
 
-    if opts[:instance].nil? && subargv.length == 0 ||
-        opts[:help] == true ||
-        subargv.length < opts[:instance].n_args then
+    if opts[:instance].nil? && subargv.empty? ||
+       opts[:help] == true ||
+       subargv.length < opts[:instance].n_args
       puts opt.help
       exit
     end

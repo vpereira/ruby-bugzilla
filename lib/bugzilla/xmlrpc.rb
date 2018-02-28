@@ -20,35 +20,30 @@
 require 'xmlrpc/client'
 
 module Bugzilla
-
-=begin rdoc
-
-=== Bugzilla::XMLRPC
-
-=end
+  # rdoc
+  #
+  # === Bugzilla::XMLRPC
+  #
 
   class XMLRPC
-
-=begin rdoc
-
-==== Bugzilla::XMLRPC#new(host, port = 443, path = '/xmlrpc.cgi', proxy_host = nil, proxy_port = nil)
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::XMLRPC#new(host, port = 443, path = '/xmlrpc.cgi', proxy_host = nil, proxy_port = nil)
+    #
 
     def initialize(host, port = 443, path = '/xmlrpc.cgi', proxy_host = nil, proxy_port = nil, timeout = 60, http_basic_auth_user = nil, http_basic_auth_pass = nil)
       path ||= '/xmlrpc.cgi'
-      use_ssl = port == 443 ? true : false
+      use_ssl = port == 443
       @xmlrpc = ::XMLRPC::Client.new(host, path, port, proxy_host, proxy_port, http_basic_auth_user, http_basic_auth_pass, use_ssl, timeout)
 
       # workaround for https://bugs.ruby-lang.org/issues/8182
-      @xmlrpc.http_header_extra = {'accept-encoding' => 'identity'}
+      @xmlrpc.http_header_extra = { 'accept-encoding' => 'identity' }
     end # def initialize
 
-=begin rdoc
-
-==== Bugzilla::XMLRPC#call(cmd, params, user = nil, password = nil)
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::XMLRPC#call(cmd, params, user = nil, password = nil)
+    #
 
     def call(cmd, params = {}, user = nil, password = nil)
       params = {} if params.nil?
@@ -58,46 +53,36 @@ module Bugzilla
       @xmlrpc.call(cmd, params)
     end # def call
 
-=begin rdoc
-
-==== Bugzilla::XMLRPC#cookie
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::XMLRPC#cookie
+    #
 
     def cookie
       @xmlrpc.cookie
     end # def cookie
 
-=begin rdoc
-
-==== Bugzilla::XMLRPC#cookie=(val)
-
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::XMLRPC#cookie=(val)
+    #
 
     def cookie=(val)
       @xmlrpc.cookie = val
     end # def cookie=
 
-=begin rdoc
+    # rdoc
+    #
+    # ==== Bugzilla::XMLRPC#token
+    #
 
-==== Bugzilla::XMLRPC#token
+    attr_reader :token # def token
 
-=end
+    # rdoc
+    #
+    # ==== Bugzilla::XMLRPC#token=(val)
+    #
 
-    def token
-      @token
-    end # def token
-
-=begin rdoc
-
-==== Bugzilla::XMLRPC#token=(val)
-
-=end
-
-    def token=(val)
-      @token = val
-    end # def token=
-
+    attr_writer :token # def token=
   end # class XMLRPC
-
 end # module Bugzilla

@@ -19,21 +19,18 @@
 
 require 'rubygems'
 
-#begin
+# begin
 #  gem 'ruby-bugzilla'
-#rescue Gem::LoadError
+# rescue Gem::LoadError
 #  require File.join(File.dirname(__FILE__), "..", "bugzilla.rb")
-#end
+# end
 
 module Bugzilla
-
   module Plugin
-
     class Novell < ::Bugzilla::Plugin::Template
-
       def initialize
         super
-	    @hostname = "bugzilla.novell.com"
+        @hostname = 'bugzilla.novell.com'
       end # def initialize
 
       def parserhook(*args)
@@ -47,9 +44,6 @@ module Bugzilla
       def posthook(*args)
         super
       end # def posthook
-
     end # class Novell
-
   end # module Plugin
-
 end # module Bugzilla

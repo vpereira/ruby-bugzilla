@@ -20,17 +20,13 @@
 require 'bugzilla/skeleton'
 require 'bugzilla/bugzilla'
 
-
 module Bugzilla
-
-=begin rdoc
-
-=== Bugzilla::APITemplate
-
-=end
+  # rdoc
+  #
+  # === Bugzilla::APITemplate
+  #
 
   class APITemplate < Skeleton
-
     def initialize(iface)
       super
 
@@ -38,13 +34,11 @@ module Bugzilla
     end # def initialize
 
     def method_missing(symbol, *args)
-      if @bz.respond_to?(symbol) then
+      if @bz.respond_to?(symbol)
         @bz.__send__(symbol, *args)
       else
         super
       end
     end # def method_missing
-
   end # class APITemplate
-
 end # module Bugzilla
