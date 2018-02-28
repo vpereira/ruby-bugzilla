@@ -30,7 +30,8 @@ module Bugzilla
     #
     # ==== Bugzilla::XMLRPC#new(host, port = 443, path = '/xmlrpc.cgi', proxy_host = nil, proxy_port = nil)
     #
-    def initialize(host, port: 443, path: '/xmlrpc.cgi', proxy_host: nil, proxy_port: nil, timeout: 60, http_basic_auth_user: nil, http_basic_auth_pass: nil, debug: false)
+    def initialize(host, port: 443, path: '/xmlrpc.cgi', proxy_host: nil,
+                   proxy_port: nil, timeout: 60, http_basic_auth_user: nil, http_basic_auth_pass: nil, debug: false)
       path ||= '/xmlrpc.cgi'
       use_ssl = port == 443
       @xmlrpc = ::XMLRPC::Client.new(host, path, port, proxy_host, proxy_port, http_basic_auth_user, http_basic_auth_pass, use_ssl, timeout)
