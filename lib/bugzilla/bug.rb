@@ -57,7 +57,7 @@ module Bugzilla
     # actually deprecated.
     #
 
-    def get_bugs(bugs, fields = ::Bugzilla::Bug::FIELDS_SUMMARY)
+    def get_bugs(bugs, fields = FIELDS_SUMMARY)
       params = {}
 
       params['ids'] = case bugs
@@ -70,15 +70,16 @@ module Bugzilla
       end
 
       unless fields.nil?
-        unless (fields - ::Bugzilla::Bug::FIELDS_ALL).empty?
-          raise ArgumentError, format('Invalid fields: %s', (::Bugzilla::Bug::FIELDS_ALL - fields).join(' '))
+        unless (fields - FIELDS_ALL).empty?
+          raise ArgumentError, format('Invalid fields: %s', (FIELDS_ALL - fields).join(' '))
         end
         params['include_fields'] = fields
       end
 
       result = get(params)
 
-      if fields.nil? || fields == ::Bugzilla::Bug::FIELDS_ALL
+
+      if fields.nil? || fields == FIELDS_ALL
         get_comments(bugs).each do |id, c|
           result['bugs'].each do |r|
             next unless r['id'].to_s == id
