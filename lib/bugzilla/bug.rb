@@ -60,14 +60,15 @@ module Bugzilla
     def get_bugs(bugs, fields = ::Bugzilla::Bug::FIELDS_SUMMARY)
       params = {}
 
-      if bugs.is_a?(Array)
-        params['ids'] = bugs
-      elsif bugs.is_a?(Integer) ||
-            bugs.is_a?(String)
+      params['ids'] = case bugs
+      when Array
+        bugs
+      when Integer || String
         params['ids'] = [bugs]
       else
         raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
       end
+
       unless fields.nil?
         unless (fields - ::Bugzilla::Bug::FIELDS_ALL).empty?
           raise ArgumentError, format('Invalid fields: %s', (::Bugzilla::Bug::FIELDS_ALL - fields).join(' '))
