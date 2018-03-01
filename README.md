@@ -1,7 +1,8 @@
 # Ruby binding for Bugzilla WebService APIs #
 
 [![Build
-Status](https://travis-ci.org/vpereira/ruby-bugzilla.svg?branch=master)](https://travis-ci.org/vpereira/ruby-bugzilla)
+Status](https://travis-ci.org/vpereira/ruby-bugzilla.svg?branch=master)](https://travis-ci.org/vpereira/ruby-bugzilla) [![Maintainability](https://api.codeclimate.com/v1/badges/e7e1b601be6dd46cf4ac/maintainability)](https://codeclimate.com/github/vpereira/ruby-bugzilla/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/e7e1b601be6dd46cf4ac/test_coverage)](https://codeclimate.com/github/vpereira/ruby-bugzilla/test_coverage)
 
 This aims to provide similar features in Ruby to access to Bugzilla
 through [WebService APIs](http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/webService.html). currently the following
@@ -16,7 +17,9 @@ APIs are available:
 
 ## bzconsole usage ##
 
-as example, in the bin directory, we have a tool named bzconsole. with that, you can login, search and get a bug. some examples:
+as example, in the bin directory, we have a tool named bzconsole. with that, you can login, search and get a bug. 
+
+### Some examples:
 
 list all new bugs, from Novell, created after 2014-09-25, with product Security (SUSE Security Incidents):
 
