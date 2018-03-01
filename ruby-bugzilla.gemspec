@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 2.0'
   s.add_development_dependency 'rubocop'
   s.add_development_dependency 'webmock'
+  s.add_development_dependency 'simplecov'
   s.add_runtime_dependency 'gruff', '~> 0'
   s.add_runtime_dependency 'highline'
   s.add_runtime_dependency 'rake', '< 11.0'
