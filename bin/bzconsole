@@ -118,9 +118,9 @@ module BzConsole
           User: 'account@example.com',
           Password: 'blahblahblah'
         },
-        'nvbz' => {
-          Name: 'Novell Bugzilla',
-          URL: 'https://bugzilla.novell.com',
+        'susebz' => {
+          Name: 'SUSE Bugzilla',
+          URL: 'https://bugzilla.suse.com',
           User: 'account@example.com',
           Password: 'blahblahblah',
           ProductAliases: {
