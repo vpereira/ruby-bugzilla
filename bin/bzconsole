@@ -28,18 +28,10 @@ require 'uri'
 require 'highline/import'
 
 begin
-  require 'bugzilla/xmlrpc'
-  require 'bugzilla/user'
-  require 'bugzilla/plugin'
-  require 'bugzilla/bug'
-  require 'bugzilla/utils'
+  require 'bugzilla'
 rescue LoadError
   $LOAD_PATH.push(File.join(File.dirname(__FILE__), '..', 'lib'))
-  require 'bugzilla/xmlrpc'
-  require 'bugzilla/user'
-  require 'bugzilla/plugin'
-  require 'bugzilla/bug'
-  require 'bugzilla/utils'
+  require 'bugzilla'
 end
 
 
