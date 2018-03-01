@@ -210,26 +210,22 @@ module Bugzilla
     def _fields(cmd, *args)
       requires_version(cmd, 3.6)
       params = {}
-
-      if args[0].is_a?(Array)
-        x = args[0].map { |x| x.is_a?(Integer) }.uniq
-        if x.length == 1 && x[0]
-          params['ids'] = args[0]
-        else
-          x = args[0].map { |x| x.is_a?(String) }.uniq
-          params['names'] = args[0] if x.length == 1 && x[0]
-        end
-      elsif args[0].is_a?(Hash)
-        params = args[0]
-      elsif args[0].is_a?(Integer)
-        params['ids'] = [args[0]]
-      elsif args[0].is_a?(String)
-        params['names'] = [args[0]]
-      elsif args[0].nil?
+      a = args[0]
+      case a
+      when Array
+        is = a.map { |x| x.is_a?(Integer) }.uniq
+        params['ids'] = a if is.size == 1 && is[0]
+        ss = a.map { |x| x.is_a?(String) }.uniq
+        params['names'] = a if ss.size == 1 && ss[0]
+      when Hash
+        params = a
+      when Integer
+        params['ids'] = [a]
+      when String
+        params['names'] = [a]
       else
         raise ArgumentError, 'Invalid parameters'
       end
-
       @iface.call(cmd, params)
     end # def _fields
 

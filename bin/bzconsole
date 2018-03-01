@@ -181,7 +181,7 @@ module BzConsole
         begin
           result = user.login('login' => login, 'password' => pass, 'remember' => true)
           cconf[host] = xmlrpc.cookie
-          save_config({ config: opts[:command][:output] }, cconf)
+          save_config({config: opts[:command][:output] }, cconf)
         rescue XMLRPC::FaultException => e
           printf("E: %s\n", e.message)
         end
