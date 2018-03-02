@@ -21,7 +21,7 @@ describe Bugzilla::Utils do
     before do
       @f = Foo.new
       @conf = { bsc: { Name: 'SUSE Bugzilla', URL: 'https://bugzilla.suse.com',
-                       Plugin: 'ruby-bugzilla/nvbugzilla.rb' } }
+                       Plugin: 'plugins/nvbugzilla.rb' } }
       @opts = { config: 'foo.yaml' }
     end
     after do
@@ -37,7 +37,7 @@ describe Bugzilla::Utils do
     before do
       @f = Foo.new
       @conf = { bsc: { Name: 'SUSE Bugzilla', URL: 'https://bugzilla.suse.com',
-                       Plugin: 'ruby-bugzilla/nvbugzilla.rb' } }
+                       Plugin: 'plugins/nvbugzilla.rb' } }
       @opts = { config: 'foo.yaml' }
       @f.save_config(@opts, @conf)
     end

@@ -90,7 +90,7 @@ module BzConsole
             'RHEL6' => 'Red Hat Enterprise Linux 6',
             'Security' => 'Security Response'
           },
-          Plugin: 'ruby-bugzilla/rhbugzilla.rb'
+          Plugin: 'plugins/rhbugzilla.rb'
         },
         'gnbz' => {
           Name: 'GNOME Bugzilla',
@@ -118,7 +118,7 @@ module BzConsole
           ProductAliases: {
             'Security' => 'SUSE Security Incidents'
           },
-          Plugin: 'ruby-bugzilla/nvbugzilla.rb'
+          Plugin: 'plugins/nvbugzilla.rb'
         }
       }
 
