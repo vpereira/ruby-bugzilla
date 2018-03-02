@@ -256,16 +256,19 @@ module Bugzilla
     def _get(cmd, *args)
       params = {}
 
-      if args[0].is_a?(Hash)
-        params = args[0]
-      elsif args[0].is_a?(Array)
-        params['ids'] = args[0]
-      elsif args[0].is_a?(Integer) ||
-            args[0].is_a?(String)
-        params['ids'] = [args[0]]
+      a = args[0]
+
+      case a
+      when Hash
+        params = a
+      when Array
+        params['ids'] = a
+      when Integer || String
+        params['ids'] = [a]
       else
         raise ArgumentError, 'Invalid parameters'
       end
+
       params['permissive'] = true if check_version(3.4)[0]
 
       @iface.call(cmd, params)
@@ -275,14 +278,14 @@ module Bugzilla
       requires_version(cmd, 3.4)
 
       params = {}
-
-      if args[0].is_a?(Hash)
-        params = args[0]
-      elsif args[0].is_a?(Array)
-        params['ids'] = args[0]
-      elsif args[0].is_a?(Integer) ||
-            args[0].is_a?(String)
-        params['ids'] = [args[0]]
+      a = args[0]
+      case a
+      when Hash
+        params = a
+      when Array
+        params['ids'] = a
+      when Integer || String
+        params['ids'] = [a]
       else
         raise ArgumentError, 'Invalid parameters'
       end
