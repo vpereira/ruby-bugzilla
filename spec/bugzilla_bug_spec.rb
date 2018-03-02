@@ -39,4 +39,15 @@ describe Bugzilla::Bug do
       end
     end
   end
+  describe :get_comments do
+    before do
+      @b.stub(:check_version).and_return([false,"3.4.1"])
+      @b.stub(:comments).and_return({"bugs"=>{"889526"=>{"comments"=>[{"creator"=>"vpereira@microfocus.com",
+                                                                       "time"=>Time.now, "bug_id"=>889526,
+                                                                       "author"=>"vpereira@microfocus.com", "text"=>""}]}}})
+    end
+    it 'should not raise error' do
+      expect { @b.get_comments(1) }.to_not raise_error
+    end
+  end
 end

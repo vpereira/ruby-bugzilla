@@ -100,13 +100,16 @@ module Bugzilla
     #
 
     def get_comments(bugs)
+
       params = {}
 
-      if bugs.is_a?(Array)
-        params['ids'] = bugs
-      elsif bugs.is_a?(Integer) ||
-            bugs.is_a?(String)
-        params['ids'] = [bugs]
+      # TODO
+      # this construction should be refactored to a method
+      params['ids'] = case bugs
+      when Array
+        bugs
+      when Integer || String
+        [bugs]
       else
         raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
       end
