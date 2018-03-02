@@ -64,7 +64,7 @@ module Bugzilla
       when Array
         bugs
       when Integer || String
-        params['ids'] = [bugs]
+        [bugs]
       else
         raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
       end
@@ -78,11 +78,10 @@ module Bugzilla
 
       result = get(params)
 
-
       if fields.nil? || fields == FIELDS_ALL
         get_comments(bugs).each do |id, c|
           result['bugs'].each do |r|
-            next unless r['id'].to_s == id
+            next unless r['id'].to_s == id.to_s
             r['comments'] = c['comments']
             r['comments'] = [] if r['comments'].nil?
             break

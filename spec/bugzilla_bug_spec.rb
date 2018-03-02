@@ -13,12 +13,29 @@ describe Bugzilla::Bug do
   describe :get_bugs do
     context 'fields default' do
       before do
-        @b.stub(:get).and_return({"bugs"=>[{"id":"1","comments":"foo"}]})
-        @b.stub(:get_comments).and_return({"1":{"comments":"foo"}})
+        @b.stub(:get).and_return('bugs' => [{ 'id' => '1', 'comments' => 'foo' }])
+        @b.stub(:get_comments).and_return('1' => { 'comments' => 'foo' })
       end
-      it 'should return something good' do
-        expect { @b.get_bugs([113,114])}.to_not raise_error
-        expect(@b.get_bugs([113,114])).to be_an Array
+      it 'should return an array and dont raise error' do
+        expect { @b.get_bugs([113, 114]) }.to_not raise_error
+        expect(@b.get_bugs([113, 114])).to be_an Array
+      end
+      it 'should raise wrap bugs in an array' do
+        expect(@b.get_bugs(1)).to be_an Array
+      end
+      it 'should raise error' do
+        expect { @b.get_bugs(nil).to raise_error }
+      end
+    end
+    context 'fields FIELDS_ALL' do
+      before do
+        @b.stub(:get).and_return('bugs' => [{ 'id' => '1', 'comments' => 'foo' }])
+        @b.stub(:get_comments).and_return('1' => { 'comments' => 'foo' })
+      end
+      it 'should return comments and an array' do
+        expect { @b.get_bugs([113, 114], Bugzilla::Bug::FIELDS_ALL) }.to_not raise_error
+        expect(@b.get_bugs(1)).to be_an Array
+        expect(@b.get_bugs(1)[0]['comments']).to eq('foo')
       end
     end
   end

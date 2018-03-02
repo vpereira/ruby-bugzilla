@@ -20,15 +20,15 @@ describe Bugzilla::Utils do
   describe 'save_config' do
     before do
       @f = Foo.new
-      @conf = {bsc: {Name: "SUSE Bugzilla", URL: "https://bugzilla.suse.com",
-                    Plugin: "ruby-bugzilla/nvbugzilla.rb"}}
-      @opts = {config: "foo.yaml"}
+      @conf = { bsc: { Name: 'SUSE Bugzilla', URL: 'https://bugzilla.suse.com',
+                       Plugin: 'ruby-bugzilla/nvbugzilla.rb' } }
+      @opts = { config: 'foo.yaml' }
     end
     after do
-      FileUtils.rm "foo.yaml"
+      FileUtils.rm 'foo.yaml'
     end
     it 'should save file in the right location' do
-      expect { @f.save_config(@opts, @conf)}.not_to raise_error
+      expect { @f.save_config(@opts, @conf) }.not_to raise_error
       expect { File.open(@opts[:config]) }.to_not raise_error
     end
   end
@@ -36,13 +36,13 @@ describe Bugzilla::Utils do
   describe 'read_config' do
     before do
       @f = Foo.new
-      @conf = {bsc: {Name: "SUSE Bugzilla", URL: "https://bugzilla.suse.com",
-                    Plugin: "ruby-bugzilla/nvbugzilla.rb"}}
-      @opts = {config: "foo.yaml"}
+      @conf = { bsc: { Name: 'SUSE Bugzilla', URL: 'https://bugzilla.suse.com',
+                       Plugin: 'ruby-bugzilla/nvbugzilla.rb' } }
+      @opts = { config: 'foo.yaml' }
       @f.save_config(@opts, @conf)
     end
     after do
-      FileUtils.rm "foo.yaml"
+      FileUtils.rm 'foo.yaml'
     end
     it 'should return a conf' do
       expect(@f.read_config(@opts)).to be_an Hash
