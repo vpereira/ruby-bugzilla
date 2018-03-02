@@ -50,25 +50,24 @@ See http://www.bugzilla.org/docs/tip/en/html/api/Bugzilla/WebService/Classificat
       requires_version(cmd, 4.4)
 
       params = {}
-
-      if ids.kind_of?(Hash) then
+      # TODO
+      # this whole block looks confuse
+      case ids
+      when Hash
         raise ArgumentError, sprintf("Invalid parameter: %s", ids.inspect) unless ids.include?('ids') || ids.include?('names')
         params[:ids] = ids['ids'] || ids['names']
-      elsif ids.kind_of?(Array) then
-	r = ids.map {|x| x.kind_of?(Integer) ? x : nil}.compact
-        if r.length != ids.length then
+      when Array
+        r = ids.map {|x| x.kind_of?(Integer) ? x : nil}.compact
+        if r.length != ids.length
           params[:names] = ids
         else
           params[:ids] = ids
         end
-      else
-        if ids.kind_of?(Integer) then
+      when Integer # XXX: different than others, we dont support String here?
           params[:ids] = [ids]
-        else
-          params[:names] = [ids]
-        end
+      else
+        params[:names] = [ids]
       end
-
       @iface.call(cmd, params)
     end # def _get
   end # class Classification
