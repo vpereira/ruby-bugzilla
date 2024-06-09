@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Bugzilla::User do
@@ -34,7 +36,7 @@ describe Bugzilla::User do
     describe :authentication_method do
       context 'working with tokens' do
         before do
-          @u.stub(:is_token_supported?).and_return(:true)
+          @u.stub(:is_token_supported?).and_return(true)
         end
         it 'should return token and the filepath for the storage' do
           r = @u.send(:authentication_method)

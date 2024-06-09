@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rubygems'
 require 'rake'
 require 'bundler'
@@ -30,7 +32,7 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-desc "Open an irb session preloaded with ruby-bugzilla"
+desc 'Open an irb session preloaded with ruby-bugzilla'
 task :console do
-  sh "irb -rubygems -I lib -r bugzilla.rb"
+  sh 'irb -rubygems -I lib -r bugzilla.rb'
 end

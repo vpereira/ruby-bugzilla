@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # product.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
@@ -46,7 +47,7 @@ module Bugzilla
     def selectable_products
       ids = get_selectable_products
       Hash[*get(ids)['products'].map { |x| [x['name'], x] }.flatten]
-    end # def selectable_products
+    end
 
     # rdoc
     #
@@ -64,7 +65,7 @@ module Bugzilla
     def enterable_products
       ids = get_enterable_products
       Hash[*get(ids)['products'].map { |x| [x['name'], x] }.flatten]
-    end # def enterable_products
+    end
 
     # rdoc
     #
@@ -82,7 +83,7 @@ module Bugzilla
     def accessible_products
       ids = get_accessible_products
       Hash[*get(ids)['products'].map { |x| [x['name'], x] }.flatten]
-    end # def accessible_products
+    end
 
     # rdoc
     #
@@ -128,15 +129,15 @@ module Bugzilla
 
     def _get_selectable_products(cmd, *_args)
       @iface.call(cmd)
-    end # def _get_selectable_products
+    end
 
     def _get_enterable_products(cmd, *_args)
       @iface.call(cmd)
-    end # def _get_entrable_products
+    end
 
     def _get_accessible_products(cmd, *_args)
       @iface.call(cmd)
-    end # def _get_accessible_products
+    end
 
     def _get(cmd, ids, *_args)
       # This is still in experimental and apparently the behavior was changed since 4.2.
@@ -145,10 +146,13 @@ module Bugzilla
 
       params = {}
 
-      if ids.is_a?(Hash)
-        raise ArgumentError, format('Invalid parameter: %s', ids.inspect) unless ids.include?('ids') || ids.include?('names')
+      case ids
+      when Hash
+        raise ArgumentError, 
+format('Invalid parameter: %s', ids.inspect) unless ids.include?('ids') || ids.include?('names')
+
         params[:ids] = ids['ids'] || ids['names']
-      elsif ids.is_a?(Array)
+      when Array
         r = ids.map { |x| x.is_a?(Integer) ? x : nil }.compact
         if r.length != ids.length
           params[:names] = ids
@@ -156,7 +160,7 @@ module Bugzilla
           params[:ids] = ids
         end
       else
-        if ids.is_a?(Integer)
+        when Integer
           params[:ids] = [ids]
         else
           params[:names] = [ids]
@@ -164,16 +168,16 @@ module Bugzilla
       end
 
       @iface.call(cmd, params)
-    end # def _get
+    end
 
     def __create(cmd, *args)
       # FIXME
-    end # def _create
+    end
 
     def __update(cmd, *_args)
       requires_version(cmd, 4.4)
 
       # FIXME
-    end # def _update
-  end # class Product
-end # module Bugzilla
+    end
+  end
+end

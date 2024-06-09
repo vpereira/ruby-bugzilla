@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # rhbugzilla.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
@@ -32,15 +34,21 @@ module Bugzilla
         super
 
         @hostname = 'bugzilla.redhat.com'
-      end # def initialize
+      end
 
       def parserhook(*args)
-        parser, argv, opts, *etc = args
+        parser, _, opts, = args
         parser.separator ''
         parser.separator 'RH Bugzilla specific options:'
-        parser.on('--cc=EMAILS', 'filter out the result by Cc in bugs') { |v| opts[:query][:cc] ||= []; opts[:query][:cc].push(*v.split(',')) }
-        parser.on('--filterversion=VERSION', 'filter out the result by the version in bugs') { |v| opts[:query][:version] ||= []; opts[:query][:version].push(*v.split(',')) }
-      end # def parserhook
+        parser.on('--cc=EMAILS', 'filter out the result by Cc in bugs') do |v|
+          opts[:query][:cc] ||= []
+          opts[:query][:cc].push(*v.split(','))
+        end
+        parser.on('--filterversion=VERSION', 'filter out the result by the version in bugs') do |v|
+          opts[:query][:version] ||= []
+          opts[:query][:version].push(*v.split(','))
+        end
+      end
 
       def prehook(*args)
         cmd, opts, *etc = args
@@ -78,7 +86,7 @@ module Bugzilla
             opts.delete(:creation_time)
           end
         when :metrics
-          metricsopts = etc[0]
+          etc[0]
           extra_field = 0
 
           if opts.include?(:status)
@@ -105,21 +113,18 @@ module Bugzilla
           end
 
           if opts.include?(:creation_time)
+            opts[format('field0-%d-0', extra_field)] = :creation_ts
+            opts[format('type0-%d-0', extra_field)] = :greaterthan
             if opts[:creation_time].is_a?(Array)
-              opts[format('field0-%d-0', extra_field)] = :creation_ts
-              opts[format('type0-%d-0', extra_field)] = :greaterthan
               opts[format('value0-%d-0', extra_field)] = opts[:creation_time][0]
               extra_field += 1
               opts[format('field0-%d-0', extra_field)] = :creation_ts
               opts[format('type0-%d-0', extra_field)] = :lessthan
               opts[format('value0-%d-0', extra_field)] = opts[:creation_time][1]
-              extra_field += 1
             else
-              opts[format('field0-%d-0', extra_field)] = :creation_ts
-              opts[format('type0-%d-0', extra_field)] = :greaterthan
               opts[format('value0-%d-0', extra_field)] = opts[:creation_time]
-              extra_field += 1
             end
+            extra_field += 1
             opts.delete(:creation_time)
           end
           if opts.include?(:last_change_time)
@@ -150,11 +155,10 @@ module Bugzilla
             opts[format('field0-%d-0', extra_field)] = :creation_ts
             opts[format('type0-%d-0', extra_field)] = :lessthan
             opts[format('value0-%d-0', extra_field)] = opts[:metrics_not_closed]
-            extra_field += 1
             opts.delete(:metrics_not_closed)
           end
-       end
-      end # def prehook
+        end
+      end
 
       def posthook(*args)
         cmd, opts, *etc = args
@@ -179,9 +183,9 @@ module Bugzilla
                 bug.delete('short_desc')
               end
             end
-           end
+          end
         when :metrics
-          metricsopts = etc[0]
+          etc[0]
 
           if opts.include?('bugs')
             opts['bugs'].each do |bug|
@@ -203,8 +207,8 @@ module Bugzilla
               end
             end
           end
-       end
-      end # def posthook
-    end # class RedHat
-  end # module Plugin
-end # module Bugzilla
+        end
+      end
+    end
+  end
+end

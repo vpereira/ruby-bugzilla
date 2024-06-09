@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # nvbugzilla.rb
 # Copyright (C) 2014 Novell, Inc.
 #
@@ -31,19 +33,19 @@ module Bugzilla
       def initialize
         super
         @hostname = 'bugzilla.novell.com'
-      end # def initialize
+      end
 
       def parserhook(*args)
         super
-      end # def parserhook
+      end
 
       def prehook(*args)
         super
-      end # def prehook
+      end
 
       def posthook(*args)
         super
-      end # def posthook
-    end # class Novell
-  end # module Plugin
-end # module Bugzilla
+      end
+    end
+  end
+end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # skeleton.rb
 # Copyright (C) 2010-2014 Red Hat, Inc.
 #
@@ -26,17 +28,15 @@ module Bugzilla
   class Skeleton
     def initialize(iface)
       @iface = iface
-    end # def initialize
+    end
 
     def method_missing(symbol, *args)
       m = "_#{symbol}"
       klass = self.class.to_s.sub(/\ABugzilla::/, '')
       fm = "#{klass}.#{symbol}"
-      if respond_to?(m, true)
-        __send__(m, fm, *args)
-      else
-        raise NoMethodError, format('No such Bugzilla APIs: %s.%s', klass, symbol)
-      end
-    end # def method_missing
-  end # class Skeleton
-end # module Bugzilla
+      raise NoMethodError, format('No such Bugzilla APIs: %s.%s', klass, symbol) unless respond_to?(m, true)
+
+      __send__(m, fm, *args)
+    end
+  end
+end

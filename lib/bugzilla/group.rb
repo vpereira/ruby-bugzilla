@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # group.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
@@ -34,10 +36,10 @@ module Bugzilla
 
     def __create(cmd, *args)
       # FIXME
-    end # def _create
+    end
 
     def __update(cmd, *args)
       # FIXME
-    end # def _update
-  end # class Group
-end # module Bugzilla
+    end
+  end
+end

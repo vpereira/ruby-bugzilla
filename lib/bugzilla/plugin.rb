@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # plugin.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
@@ -34,18 +36,19 @@ module Bugzilla
 
       def initialize
         @hostname = nil
-      end # def initialize
+      end
 
       attr_reader :hostname
 
       def self.inherited(subclass)
         @@plugins << subclass
-      end # def inherited
+      end
 
       def run(hook, host, *args)
         @@plugins.each do |k|
           i = k.new
           next unless i.hostname == host || host.nil?
+
           case hook
           when :parser
             i.parserhook(*args)
@@ -55,13 +58,16 @@ module Bugzilla
             i.posthook(*args)
           end
         end
-      end # def run
+      end
 
-      def parserhook(parser, argv, opts); end # def parserhook
+      # def parserhook
+      def parserhook(parser, argv, opts); end
 
-      def prehook(cmd, opts); end # def prehook
+      # def prehook
+      def prehook(cmd, opts); end
 
-      def posthook(cmd, opts); end # def posthook
-    end # class Template
-  end # module Plugin
-end # module Bugzilla
+      # def posthook
+      def posthook(cmd, opts); end
+    end
+  end
+end

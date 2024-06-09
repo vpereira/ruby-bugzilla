@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # user.rb
 # Copyright (C) 2010-2014 Red Hat, Inc.
 #
@@ -68,7 +70,7 @@ module Bugzilla
 
       save_authentication_token(fname, conf)
       key
-    end # def session
+    end
 
     # rdoc
     #
@@ -76,18 +78,18 @@ module Bugzilla
     #
 
     def get_userinfo(user)
-      p = {}
       ids = []
       names = []
 
-      if user.is_a?(Array)
+      case user
+      when Array
         user.each do |u|
           names << u if u.is_a?(String)
           id << u if u.is_a?(Integer)
         end
-      elsif user.is_a?(String)
+      when String
         names << user
-      elsif user.is_a?(Integer)
+      when Integer
         ids << user
       else
         raise ArgumentError, format('Unknown type of arguments: %s', user.class)
@@ -96,7 +98,7 @@ module Bugzilla
       result = get('ids' => ids, 'names' => names)
 
       result['users']
-    end # def get_userinfo
+    end
 
     # rdoc
     #
@@ -127,7 +129,10 @@ module Bugzilla
     end
 
     def save_authentication_token(fname, conf)
-      File.open(fname, 'w') { |f| f.chmod(0o600); f.write(conf.to_yaml) }
+      File.open(fname, 'w') do |f|
+        f.chmod(0o600)
+        f.write(conf.to_yaml)
+      end
     end
 
     def is_token_supported?
@@ -153,30 +158,30 @@ module Bugzilla
       @iface.token = res['token'] unless res['token'].nil?
 
       res
-    end # def _login
+    end
 
     def _logout(cmd, *_args)
       @iface.call(cmd)
-    end # def _logout
+    end
 
     def __offer_account_by_email(cmd, *args)
       # FIXME
-    end # def _offer_account_by_email
+    end
 
     def __create(cmd, *args)
       # FIXME
-    end # def _create
+    end
 
     def __update(cmd, *args)
       # FIXME
-    end # def _update
+    end
 
     def _get(cmd, *args)
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
       requires_version(cmd, 3.4)
-      res = @iface.call(cmd, args[0])
+      @iface.call(cmd, args[0])
       # FIXME
-    end # def _get
-  end # class User
-end # module Bugzilla
+    end
+  end
+end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # bug.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
@@ -61,18 +63,19 @@ module Bugzilla
       params = {}
 
       params['ids'] = case bugs
-      when Array
-        bugs
-      when Integer || String
-        [bugs]
-      else
-        raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
-      end
+                      when Array
+                        bugs
+                      when Integer || String
+                        [bugs]
+                      else
+                        raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
+                      end
 
       unless fields.nil?
         unless (fields - FIELDS_ALL).empty?
           raise ArgumentError, format('Invalid fields: %s', (FIELDS_ALL - fields).join(' '))
         end
+
         params['include_fields'] = fields
       end
 
@@ -82,6 +85,7 @@ module Bugzilla
         get_comments(bugs).each do |id, c|
           result['bugs'].each do |r|
             next unless r['id'].to_s == id.to_s
+
             r['comments'] = c['comments']
             r['comments'] = [] if r['comments'].nil?
             break
@@ -92,7 +96,7 @@ module Bugzilla
       # 'bugs' is only in interests.
       # XXX: need to deal with 'faults' ?
       result['bugs']
-    end # def get_bugs
+    end
 
     # rdoc
     #
@@ -100,19 +104,18 @@ module Bugzilla
     #
 
     def get_comments(bugs)
-
       params = {}
 
       # TODO
       # this construction should be refactored to a method
       params['ids'] = case bugs
-      when Array
-        bugs
-      when Integer || String
-        [bugs]
-      else
-        raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
-      end
+                      when Array
+                        bugs
+                      when Integer || String
+                        [bugs]
+                      else
+                        raise ArgumentError, format('Unknown type of arguments: %s', bugs.class)
+                      end
 
       result = comments(params)
 
@@ -120,7 +123,7 @@ module Bugzilla
       ret = result['bugs']
       # creation_time was added in Bugzilla 4.4. copy the 'time' value to creation_time if not available for compatibility.
       unless check_version(4.4)[0]
-        ret.each do |_id, o|
+        ret.each_value do |o|
           o['comments'].each do |c|
             c['creation_time'] = c['time'] unless c.include?('creation_time')
           end
@@ -128,7 +131,7 @@ module Bugzilla
       end
 
       ret
-    end # def get_comments
+    end
 
     # rdoc
     #
@@ -231,13 +234,13 @@ module Bugzilla
         raise ArgumentError, 'Invalid parameters'
       end
       @iface.call(cmd, params)
-    end # def _fields
+    end
 
     def _legal_values(cmd, *args)
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
       @iface.call(cmd, args[0])
-    end # def _legal_values
+    end
 
     def _attachments(cmd, *args)
       requires_version(cmd, 3.6)
@@ -245,7 +248,7 @@ module Bugzilla
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
       @iface.call(cmd, args[0])
-    end # def _attachments
+    end
 
     def _comments(cmd, *args)
       requires_version(cmd, 3.4)
@@ -253,7 +256,7 @@ module Bugzilla
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
       @iface.call(cmd, args[0])
-    end # def _comments
+    end
 
     def _get(cmd, *args)
       params = {}
@@ -274,7 +277,7 @@ module Bugzilla
       params['permissive'] = true if check_version(3.4)[0]
 
       @iface.call(cmd, params)
-    end # def _get
+    end
 
     def _history(cmd, *args)
       requires_version(cmd, 3.4)
@@ -293,7 +296,7 @@ module Bugzilla
       end
 
       @iface.call(cmd, params)
-    end # def _history
+    end
 
     def _search(cmd, *args)
       requires_version(cmd, 3.4)
@@ -301,7 +304,7 @@ module Bugzilla
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
 
       @iface.call(cmd, args[0])
-    end # def _search
+    end
 
     def _create(cmd, *args)
       raise ArgumentError, 'Invalid parameters' unless args[0].is_a?(Hash)
@@ -322,35 +325,39 @@ module Bugzilla
         end
       else
         raise ArgumentError, "groups field isn't available in this bugzilla" if args[0].include?('groups')
-        raise ArgumentError, "comment_is_private field isn't available in this bugzilla" if args[0].include?('comment_is_private')
+
+        if args[0].include?('comment_is_private')
+          raise ArgumentError,
+                "comment_is_private field isn't available in this bugzilla"
+        end
       end
 
       @iface.call(cmd, args[0])
-    end # def _create
+    end
 
     def __add_attachment(cmd, *_args)
       requires_version(cmd, 4.0)
       # FIXME
-    end # def _add_attachment
+    end
 
     def __add_comment(cmd, *_args)
       requires_version(cmd, 3.2)
       # FIXME
-    end # def _add_comment
+    end
 
     def __update(cmd, *_args)
       requires_version(cmd, 4.0)
       # FIXME
-    end # def _update
+    end
 
     def __update_see_also(cmd, *_args)
       requires_version(cmd, 3.4)
       # FIXME
-    end # def _update_see_also
+    end
 
     def __update_tags(cmd, *_args)
       requires_version(cmd, 4.4)
       # FIXME
-    end # def _update_tags
-  end # class Bug
-end # module Bugzilla
+    end
+  end
+end

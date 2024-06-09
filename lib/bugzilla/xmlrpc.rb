@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # xmlrpc.rb
 # Copyright (C) 2010-2014 Red Hat, Inc.
 #
@@ -34,11 +36,12 @@ module Bugzilla
                    proxy_port: nil, timeout: 60, http_basic_auth_user: nil, http_basic_auth_pass: nil, debug: false)
       path ||= '/xmlrpc.cgi'
       use_ssl = port == 443
-      @xmlrpc = ::XMLRPC::Client.new(host, path, port, proxy_host, proxy_port, http_basic_auth_user, http_basic_auth_pass, use_ssl, timeout)
+      @xmlrpc = ::XMLRPC::Client.new(host, path, port, proxy_host, proxy_port, http_basic_auth_user,
+                                     http_basic_auth_pass, use_ssl, timeout)
       # workaround for https://bugs.ruby-lang.org/issues/8182
       @xmlrpc.http_header_extra = { 'accept-encoding' => 'identity' }
       @xmlrpc.http.set_debug_output($stdout) if debug
-    end # def initialize
+    end
 
     def use_ssl?
       @xmlrpc.http.use_ssl?
@@ -55,7 +58,7 @@ module Bugzilla
       params['Bugzilla_password'] = password unless user.nil? || password.nil?
       params['Bugzilla_token'] = @token unless @token.nil?
       @xmlrpc.call(cmd, params)
-    end # def call
+    end
 
     # rdoc
     #
@@ -64,7 +67,7 @@ module Bugzilla
 
     def cookie
       @xmlrpc.cookie
-    end # def cookie
+    end
 
     # rdoc
     #
@@ -73,20 +76,18 @@ module Bugzilla
 
     def cookie=(val)
       @xmlrpc.cookie = val
-    end # def cookie=
+    end
 
     # rdoc
     #
     # ==== Bugzilla::XMLRPC#token
     #
 
-    attr_reader :token # def token
+    attr_accessor :token
 
     # rdoc
     #
     # ==== Bugzilla::XMLRPC#token=(val)
     #
-
-    attr_writer :token # def token=
-  end # class XMLRPC
-end # module Bugzilla
+  end
+end

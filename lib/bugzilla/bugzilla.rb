@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # bugzilla.rb
 # Copyright (C) 2010-2014 Red Hat, Inc.
 #
@@ -47,7 +49,7 @@ module Bugzilla
       end
 
       [f, v['version']]
-    end # def check_version
+    end
 
     # rdoc
     #
@@ -60,7 +62,7 @@ module Bugzilla
     def requires_version(cmd, version_)
       v = check_version(version_)
       raise NoMethodError, format('%s is not supported in Bugzilla %s', cmd, v[1]) unless v[0]
-    end # def requires_version
+    end
 
     # rdoc
     #
@@ -116,34 +118,34 @@ module Bugzilla
 
     def _version(cmd, *_args)
       @iface.call(cmd)
-    end # def _version
+    end
 
     def _extensions(cmd, *_args)
       requires_version(cmd, 3.2)
 
       @iface.call(cmd)
-    end # def _extensions
+    end
 
     def _timezone(cmd, *_args)
       @iface.call(cmd)
-    end # def _timezone
+    end
 
     def _time(cmd, *_args)
       requires_version(cmd, 3.4)
 
       @iface.call(cmd)
-    end # def _time
+    end
 
     def _parameters(cmd, *_args)
       requires_version(cmd, 4.4)
 
       @iface.call(cmd)
-    end # def _parameters
+    end
 
     def __last_audit_time(cmd, *_args)
       requires_version(cmd, 4.4)
 
       # FIXME
-    end # def _last_audit_time
-  end # class Bugzilla
-end # module Bugzilla
+    end
+  end
+end

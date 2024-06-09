@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # api_template.rb
 # Copyright (C) 2010-2012 Red Hat, Inc.
 #
@@ -31,7 +33,7 @@ module Bugzilla
       super
       # iface is a Bugzilla::XMLRPC object
       @bz = Bugzilla.new(iface)
-    end # def initialize
+    end
 
     def method_missing(symbol, *args)
       if @bz.respond_to?(symbol)
@@ -39,6 +41,6 @@ module Bugzilla
       else
         super
       end
-    end # def method_missing
-  end # class APITemplate
-end # module Bugzilla
+    end
+  end
+end
